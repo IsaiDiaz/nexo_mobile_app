@@ -1,7 +1,9 @@
 // lib/application/auth_controller.dart (Este archivo se mantiene igual)
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/auth_repository.dart';
+import 'package:nexo/model/registration_data.dart';
 
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
@@ -68,6 +70,7 @@ class AuthController extends StateNotifier<AuthState> {
         password: password,
         username: username,
         role: role,
+        avatarPath: avatarPath,
       );
       state = AuthState.authenticated;
       return null;
@@ -76,6 +79,12 @@ class AuthController extends StateNotifier<AuthState> {
       return e.toString();
     }
   }
+
+  final authControllerProvider =
+      StateNotifierProvider<AuthController, AuthState>((ref) {
+        final authRepository = ref.watch(authRepositoryProvider);
+        return AuthController(authRepository, ref);
+      });
 
   Future<void> signOut() async {
     state = AuthState.loading;
@@ -96,7 +105,69 @@ final authStatusProvider = Provider<bool>((ref) {
   return authControllerState == AuthState.authenticated;
 });
 
-final currentUserProvider = Provider((ref) {
-  final authState = ref.watch(authRepositoryProvider);
-  return authState == AuthState.authenticated;
+final currentUserRecordProvider = Provider<pb.RecordModel?>((ref) {
+  final authControllerState = ref.watch(authControllerProvider);
+
+  if (authControllerState != AuthState.authenticated) {
+    return null;
+  }
+  final authRepository = ref.watch(authRepositoryProvider);
+  return authRepository.currentUser;
+});
+
+final personProfileProvider = FutureProvider.autoDispose<pb.RecordModel?>((
+  ref,
+) async {
+  final currentUser = ref.watch(currentUserRecordProvider);
+  if (currentUser == null) {
+    return null;
+  }
+  final authRepository = ref.watch(authRepositoryProvider);
+  return await authRepository.getPersonProfile(currentUser.id);
+});
+
+final professionalProfileProvider = FutureProvider.autoDispose<pb.RecordModel?>(
+  (ref) async {
+    final currentUser = ref.watch(currentUserRecordProvider);
+    if (currentUser == null) {
+      return null;
+    }
+    final authRepository = ref.watch(authRepositoryProvider);
+    return await authRepository.getProfessionalProfile(currentUser.id);
+  },
+);
+
+final availableUserRolesProvider = Provider<List<UserRole>>((ref) {
+  final currentUser = ref.watch(currentUserRecordProvider);
+  if (currentUser == null) {
+    return [];
+  }
+  final userRolesData = currentUser.data['role'] as List<dynamic>?;
+  List<UserRole> roles = [];
+  if (userRolesData != null) {
+    for (var roleString in userRolesData) {
+      try {
+        roles.add(
+          UserRole.values.firstWhere(
+            (e) => e.name.toUpperCase() == roleString.toString().toUpperCase(),
+          ),
+        );
+      } catch (e) {
+        print('Rol desconocido en availableUserRolesProvider: $roleString');
+      }
+    }
+  }
+  return roles;
+});
+
+final activeRoleProvider = StateProvider<UserRole?>((ref) {
+  final availableRoles = ref.watch(availableUserRolesProvider);
+  if (availableRoles.isNotEmpty) {
+    if (availableRoles.contains(UserRole.client)) {
+      return UserRole.client;
+    } else if (availableRoles.contains(UserRole.professional)) {
+      return UserRole.professional;
+    }
+  }
+  return null;
 });

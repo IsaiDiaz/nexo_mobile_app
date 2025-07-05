@@ -1,5 +1,6 @@
 // lib/data/auth_repository.dart
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
@@ -35,7 +36,7 @@ class AuthRepository {
     required String email,
     required String password,
     required String username,
-    required String role,
+    required role,
     String? avatarPath,
   }) async {
     try {
@@ -54,8 +55,7 @@ class AuthRepository {
         if (await avatarFile.exists()) {
           filesToUpload.add(
             http.MultipartFile.fromBytes(
-              // <--- Usa el alias 'http.'
-              'avatar', // Nombre del campo 'file' en PocketBase
+              'avatar',
               await avatarFile.readAsBytes(),
               filename: avatarFile.path.split('/').last,
             ),
@@ -63,13 +63,9 @@ class AuthRepository {
         }
       }
 
-      // Crear el usuario
       final userRecord = await _pb
           .collection('users')
-          .create(
-            body: body,
-            files: filesToUpload, // Pasa la lista de MultipartFile
-          );
+          .create(body: body, files: filesToUpload);
 
       await signIn(email, password);
 
@@ -83,7 +79,6 @@ class AuthRepository {
     }
   }
 
-  // Nuevo método para crear el perfil 'person'
   Future<void> createPersonProfile({
     required String userId,
     required String firstName,
@@ -114,7 +109,6 @@ class AuthRepository {
     }
   }
 
-  // Nuevo método para crear el perfil 'professional_profile'
   Future<void> createProfessionalProfile({
     required String userId,
     required double hourlyRate,
@@ -135,10 +129,7 @@ class AuthRepository {
               'address': address,
               'description': description,
               'business_name': businessName,
-              'coordinate': {
-                'lat': coordinateLat,
-                'lon': coordinateLon,
-              }, // Formato para GeoPoint
+              'coordinate': {'lat': coordinateLat, 'lon': coordinateLon},
               'category': category,
             },
           );
@@ -150,6 +141,115 @@ class AuthRepository {
       throw Exception(
         'Ocurrió un error inesperado al crear perfil profesional: $e',
       );
+    }
+  }
+
+  Future<pb.RecordModel?> getPersonProfile(String userId) async {
+    try {
+      final result = await _pb.collection('person').getOne(userId);
+      return result;
+    } on pb.ClientException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    } catch (e) {
+      print('Error al obtener perfil personal: $e');
+      return null;
+    }
+  }
+
+  Future<pb.RecordModel?> getProfessionalProfile(String userId) async {
+    try {
+      final result = await _pb
+          .collection('professional_profile')
+          .getOne(userId);
+      return result;
+    } on pb.ClientException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    } catch (e) {
+      print('Error al obtener perfil profesional: $e');
+      return null;
+    }
+  }
+
+  Future<void> updatePersonProfile({
+    required String recordId,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    String? identificationNumber,
+  }) async {
+    try {
+      final body = <String, dynamic>{};
+      if (firstName != null) body['name'] = firstName;
+      if (lastName != null) body['last_name'] = lastName;
+      if (phoneNumber != null) body['phone_number'] = phoneNumber;
+      if (identificationNumber != null) {
+        body['identification_number'] = identificationNumber;
+      }
+
+      await _pb.collection('person').update(recordId, body: body);
+    } on pb.ClientException catch (e) {
+      throw Exception(
+        'Error al actualizar perfil personal: ${e.response['message']}',
+      );
+    } catch (e) {
+      throw Exception(
+        'Ocurrió un error inesperado al actualizar perfil personal: $e',
+      );
+    }
+  }
+
+  Future<void> updateProfessionalProfile({
+    required String recordId,
+    double? hourlyRate,
+    String? address,
+    String? description,
+    String? businessName,
+    double? coordinateLat,
+    double? coordinateLon,
+    String? category,
+  }) async {
+    try {
+      final body = <String, dynamic>{};
+      if (hourlyRate != null) body['hourly_rate'] = hourlyRate;
+      if (address != null) body['address'] = address;
+      if (description != null) body['description'] = description;
+      if (businessName != null) body['business_name'] = businessName;
+      if (coordinateLat != null && coordinateLon != null) {
+        body['coordinate'] = {'lat': coordinateLat, 'lon': coordinateLon};
+      }
+      if (category != null) body['category'] = category;
+
+      await _pb.collection('professional_profile').update(recordId, body: body);
+    } on pb.ClientException catch (e) {
+      throw Exception(
+        'Error al actualizar perfil profesional: ${e.response['message']}',
+      );
+    } catch (e) {
+      throw Exception(
+        'Ocurrió un error inesperado al actualizar perfil profesional: $e',
+      );
+    }
+  }
+
+  Future<void> addRoleToUser(String userId, UserRole newRole) async {
+    try {
+      final user = await _pb.collection('users').getOne(userId);
+      List<String> currentRoles = (user.data['role'] as List).cast<String>();
+
+      if (!currentRoles.contains(newRole.name.toUpperCase())) {
+        currentRoles.add(newRole.name.toUpperCase());
+        await _pb
+            .collection('users')
+            .update(userId, body: {'role': currentRoles});
+      }
+    } on pb.ClientException catch (e) {
+      throw Exception(
+        'Error al añadir rol al usuario: ${e.response['message']}',
+      );
+    } catch (e) {
+      throw Exception('Ocurrió un error inesperado al añadir rol: $e');
     }
   }
 
