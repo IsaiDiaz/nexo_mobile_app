@@ -34,16 +34,13 @@ class AvailableSchedule {
       'id': id,
       'professional_profile': professionalProfileId,
       'day_of_week': dayOfWeek,
-      // Formatear a HH:mm:ss.SSS para PocketBase 'time' field
       'start_time':
           '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}:00.000',
       'end_time':
           '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00.000',
-      // 'created' y 'updated' son manejados por PocketBase al crear/actualizar
     };
   }
 
-  // Helper para mostrar el tiempo en formato legible (ej. 09:00 AM)
   String get formattedStartTime {
     final hour = startTime.hour;
     final minute = startTime.minute.toString().padLeft(2, '0');

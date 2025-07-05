@@ -36,18 +36,18 @@ class App extends ConsumerWidget {
       }
     }
 
-    Widget homeScreen;
+    Widget currentScreen;
     if (isAuthenticated) {
-      homeScreen = const HomePage();
+      currentScreen = const HomePage();
     } else {
       if (registrationState.currentStep != RegistrationStep.completed &&
           registrationState.currentStep != RegistrationStep.roleSelection) {
-        homeScreen = _getRegistrationPage(registrationState.currentStep);
+        currentScreen = _getRegistrationPage(registrationState.currentStep);
       } else if (registrationState.currentStep ==
           RegistrationStep.roleSelection) {
-        homeScreen = const RoleSelectionPage();
+        currentScreen = const RoleSelectionPage();
       } else {
-        homeScreen = const LoginPage();
+        currentScreen = const LoginPage();
       }
     }
 
@@ -57,7 +57,7 @@ class App extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: homeScreen,
+      home: currentScreen,
     );
   }
 }

@@ -14,19 +14,12 @@ class AuthController extends StateNotifier<AuthState> {
   AuthController(this._authRepository, this._ref) : super(AuthState.initial) {
     _checkInitialAuthStatus();
 
-    final disposeListener = _authRepository.pocketBase.authStore.onChange.listen((
-      _,
-    ) {
-      print(
-        'AuthController: authStore.onChange detectado. Recalculando estado...',
-      );
-      _checkInitialAuthStatus();
-    });
+    final disposeListener = _authRepository.pocketBase.authStore.onChange
+        .listen((_) {
+          _checkInitialAuthStatus();
+        });
 
     _ref.onDispose(() {
-      print(
-        'AuthController: Desechando y cancelando listener de authStore.onChange',
-      );
       disposeListener.cancel();
     });
   }

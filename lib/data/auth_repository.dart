@@ -146,7 +146,9 @@ class AuthRepository {
 
   Future<pb.RecordModel?> getPersonProfile(String userId) async {
     try {
-      final result = await _pb.collection('person').getOne(userId);
+      final result = await _pb
+          .collection('person')
+          .getFirstListItem('user="$userId"');
       return result;
     } on pb.ClientException catch (e) {
       if (e.statusCode == 404) return null;
@@ -161,7 +163,8 @@ class AuthRepository {
     try {
       final result = await _pb
           .collection('professional_profile')
-          .getOne(userId);
+          .getFirstListItem('user="$userId"');
+      print("Professional profile fetched: ${result.toJson()}");
       return result;
     } on pb.ClientException catch (e) {
       if (e.statusCode == 404) return null;

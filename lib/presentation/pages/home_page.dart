@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
 
@@ -75,7 +76,7 @@ class HomePage extends ConsumerWidget {
           ); // TODO: Implementar
         case HomeSection.scheduleManagement:
           return const Center(
-            child: Text('Gestión de Horarios (Profesional)'),
+            child: ScheduleManagementView(),
           ); // TODO: Implementar
         case HomeSection.professionalNotifications:
           return const Center(
