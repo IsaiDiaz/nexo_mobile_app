@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:nexo/presentation/views/client_appointments_view.dart';
+import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
@@ -63,17 +65,13 @@ class HomePage extends ConsumerWidget {
         case HomeSection.searchProfessionals:
           return const SearchProfessionalsView();
         case HomeSection.clientAppointments:
-          return const Center(
-            child: Text('Citas de Cliente (Próximas/Pendientes)'),
-          ); // TODO: Implementar
+          return const ClientAppointmentsView();
         case HomeSection.professionalAnnouncements:
           return const Center(
             child: Text('Anuncios de Profesionales'),
           ); // TODO: Implementar
         case HomeSection.professionalAppointments:
-          return const Center(
-            child: Text('Citas de Profesional (Próximas/Pendientes)'),
-          ); // TODO: Implementar
+          return ProfessionalAppointmentsView();
         case HomeSection.scheduleManagement:
           return const Center(
             child: ScheduleManagementView(),

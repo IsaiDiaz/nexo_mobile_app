@@ -404,6 +404,7 @@ class _ScheduleManagementViewState
                                 ),
                                 const Divider(height: 16),
                                 ...schedules.map((schedule) {
+                                  print('schedule: ${schedule.toJson()}');
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 4.0,

@@ -175,6 +175,36 @@ class AuthRepository {
     }
   }
 
+  Future<List<pb.RecordModel>> getAllProfessionalProfiles({
+    String? category,
+  }) async {
+    try {
+      // expand 'user' para obtener el nombre, email, etc. del usuario autenticado asociado
+      // expand 'available_schedules' si quieres mostrar sus horarios en la búsqueda
+      final records = await pocketBase
+          .collection('professional_profile')
+          .getFullList(
+            filter: category != null && category.isNotEmpty
+                ? 'category = "$category"' // Ejemplo de filtro por especialización (si es campo texto)
+                : '',
+            expand: 'user', // <--- Importante: expandir usuario y horarios
+          );
+
+      print(records);
+      return records;
+    } on pb.ClientException catch (e) {
+      print(
+        'PocketBase ClientException in getAllProfessionalProfiles: ${e.response}',
+      );
+      throw Exception(
+        'Error al obtener perfiles profesionales: ${e.response['message']}',
+      );
+    } catch (e) {
+      print('Error inesperado en getAllProfessionalProfiles: $e');
+      throw Exception('Error inesperado al obtener perfiles profesionales: $e');
+    }
+  }
+
   Future<void> updatePersonProfile({
     required String recordId,
     String? firstName,

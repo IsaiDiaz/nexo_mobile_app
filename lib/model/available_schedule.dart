@@ -18,25 +18,24 @@ class AvailableSchedule {
   factory AvailableSchedule.fromRecord(pb.RecordModel record) {
     return AvailableSchedule(
       id: record.id,
-      professionalProfileId: record.data['professional_profile'] as String,
+      professionalProfileId: record.data['professional'] as String,
       dayOfWeek: record.data['day_of_week'] as String,
-      startTime: DateTime.parse(
-        '2000-01-01T${record.data['start_time']}Z',
-      ).toLocal(),
-      endTime: DateTime.parse(
-        '2000-01-01T${record.data['end_time']}Z',
-      ).toLocal(),
+      startTime: DateTime.parse('2000-01-01T${record.data['start_time']}'),
+      endTime: DateTime.parse('2000-01-01T${record.data['end_time']}'),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'professional_profile': professionalProfileId,
+      'professional': professionalProfileId,
       'day_of_week': dayOfWeek,
       'start_time':
+          // should be in this regex format ^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$
+          // '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}:00.000',
           '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}:00.000',
       'end_time':
+          // '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00.000',
           '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00.000',
     };
   }

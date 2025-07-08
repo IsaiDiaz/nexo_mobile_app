@@ -16,7 +16,7 @@ class ScheduleRepository {
       final records = await _pb
           .collection('available_schedule')
           .getFullList(
-            filter: 'professional_profile = "$professionalProfileId"',
+            filter: 'professional = "$professionalProfileId"',
             sort: 'day_of_week, start_time',
           );
       return records
@@ -33,6 +33,7 @@ class ScheduleRepository {
 
   Future<AvailableSchedule> createSchedule(AvailableSchedule schedule) async {
     try {
+      print(schedule.toJson());
       final record = await _pb
           .collection('available_schedule')
           .create(body: schedule.toJson());
