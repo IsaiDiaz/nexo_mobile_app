@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexo/data/auth_repository.dart'; // Importa tu AuthRepository
-import 'package:pocketbase/pocketbase.dart'; // Para RecordModel
+import 'package:nexo/data/auth_repository.dart';
+import 'package:pocketbase/pocketbase.dart';
 
-// Estado para la respuesta de la API
 class TestPocketbaseState {
   final String message;
   final bool isLoading;
@@ -20,7 +19,6 @@ class TestPocketbaseState {
   }
 }
 
-// StateNotifier para gestionar el estado de la llamada a la API
 class TestPocketbaseNotifier extends StateNotifier<TestPocketbaseState> {
   final AuthRepository _authRepository;
 
@@ -46,7 +44,6 @@ class TestPocketbaseNotifier extends StateNotifier<TestPocketbaseState> {
   }
 }
 
-// Provider para TestPocketbaseNotifier
 final testPocketbaseControllerProvider =
     StateNotifierProvider<TestPocketbaseNotifier, TestPocketbaseState>((ref) {
       final authRepository = ref.watch(authRepositoryProvider);

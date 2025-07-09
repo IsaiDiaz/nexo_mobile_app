@@ -90,7 +90,6 @@ class ScheduleController extends StateNotifier<ScheduleState> {
     }
   }
 
-  // Agregar un nuevo horario
   Future<String?> addSchedule({
     required String dayOfWeek,
     required DateTime startTime,
@@ -146,7 +145,7 @@ class ScheduleController extends StateNotifier<ScheduleState> {
             return a.startTime.compareTo(b.startTime);
           }),
       );
-      return null; // Éxito
+      return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
       return e.toString();
@@ -213,8 +212,7 @@ final scheduleControllerProvider =
 final groupedSchedulesProvider =
     Provider.autoDispose<Map<String, List<AvailableSchedule>>>((ref) {
       final scheduleState = ref.watch(scheduleControllerProvider);
-      if (scheduleState.isLoading)
-        return {}; // O un mapa vacío si está cargando
+      if (scheduleState.isLoading) return {};
 
       final Map<String, List<AvailableSchedule>> grouped = {};
       final dayNames = {

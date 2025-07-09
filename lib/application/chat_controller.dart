@@ -1,14 +1,11 @@
-// lib/application/chat_controller.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/data/chat_repository.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/chat.dart';
 import 'package:nexo/model/message.dart';
-import 'dart:async'; // Necesario para StreamSubscription
+import 'dart:async';
 
-// Tu ChatState está bien
 class ChatState {
   final AsyncValue<List<Chat>> userChats;
   final AsyncValue<List<Message>> currentChatMessages;
@@ -37,7 +34,6 @@ class ChatState {
   }
 }
 
-// Tus providers externos están bien
 final currentSelectedChatProvider = StateProvider<Chat?>((ref) => null);
 
 final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>(
@@ -54,8 +50,7 @@ class ChatController extends StateNotifier<ChatState> {
   final ChatRepository _chatRepository;
   final String? _currentUserId;
   final Ref _ref;
-  StreamSubscription<Message>?
-  _messageSubscription; // <-- El tipo correcto ahora es Message
+  StreamSubscription<Message>? _messageSubscription;
 
   ChatController(this._chatRepository, this._currentUserId, this._ref)
     : super(
@@ -67,9 +62,7 @@ class ChatController extends StateNotifier<ChatState> {
     if (_currentUserId != null) {
       loadUserChats();
     }
-    // IMPORTANTE: Escuchar cuando el ChatController deja de ser "escuchado"
-    // Esto asegura que la suscripción a PocketBase se cancele automáticamente
-    // cuando ningún widget o provider esté observando a ChatController.
+
     _ref.onDispose(() {
       print('ChatController: Disposing, canceling message subscription.');
       _messageSubscription?.cancel();
@@ -115,7 +108,7 @@ class ChatController extends StateNotifier<ChatState> {
         _currentUserId!,
         professionalId,
       );
-      await loadUserChats(); // Refrescar la lista de chats después de crear/encontrar uno
+      await loadUserChats();
       _ref.read(currentSelectedChatProvider.notifier).state = chat;
       state = state.copyWith(isLoading: false);
       return chat;
@@ -126,12 +119,10 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   Future<void> loadAndSubscribeToChatMessages(Chat chat) async {
-    // 1. Limpiar la suscripción anterior si existe
     await _messageSubscription?.cancel();
     _messageSubscription = null;
     print('ChatController: Cancelada suscripción anterior si existía.');
 
-    // 2. Cargar mensajes históricos
     state = state.copyWith(currentChatMessages: const AsyncValue.loading());
     try {
       final messages = await _chatRepository.getChatMessages(chat.id);
@@ -140,11 +131,9 @@ class ChatController extends StateNotifier<ChatState> {
     } catch (e, st) {
       print('ChatController: Error cargando mensajes históricos: $e');
       state = state.copyWith(currentChatMessages: AsyncValue.error(e, st));
-      // Si falla la carga histórica, no intentes suscribirte.
       return;
     }
 
-    // 3. Establecer nueva suscripción en tiempo real
     print(
       'ChatController: Estableciendo nueva suscripción para chat ${chat.id}',
     );
@@ -152,22 +141,18 @@ class ChatController extends StateNotifier<ChatState> {
         .subscribeToChatMessages(chat.id)
         .listen(
           (newMessage) {
-            // Asegúrate de que el estado actual es data antes de modificar
             if (state.currentChatMessages is AsyncData<List<Message>>) {
               final currentMessages = state.currentChatMessages.value ?? [];
-              // Prevenir duplicados si el stream envía eventos de "creación" y "actualización"
               final updatedMessages = List<Message>.from(currentMessages);
               final existingIndex = updatedMessages.indexWhere(
                 (msg) => msg.id == newMessage.id,
               );
 
               if (existingIndex != -1) {
-                updatedMessages[existingIndex] =
-                    newMessage; // Actualizar existente
+                updatedMessages[existingIndex] = newMessage;
               } else {
-                updatedMessages.add(newMessage); // Añadir nuevo
+                updatedMessages.add(newMessage);
               }
-              // Siempre ordenar para asegurar el orden cronológico
               updatedMessages.sort(
                 (a, b) => a.createdAt.compareTo(b.createdAt),
               );
@@ -182,7 +167,6 @@ class ChatController extends StateNotifier<ChatState> {
               print(
                 'ChatController: Recibido mensaje en tiempo real, pero el estado no es AsyncData. Re-cargando.',
               );
-              // Si el estado no es data (ej. error o loading), recarga para asegurar consistencia
               _chatRepository
                   .getChatMessages(chat.id)
                   .then((messages) {
@@ -207,7 +191,7 @@ class ChatController extends StateNotifier<ChatState> {
             print('ChatController: Stream de mensajes cerrado.');
             _messageSubscription = null;
           },
-          cancelOnError: true, // Importante: cancela el stream si hay un error
+          cancelOnError: true,
         );
   }
 
@@ -218,8 +202,6 @@ class ChatController extends StateNotifier<ChatState> {
     }
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      // No necesitamos añadir el mensaje aquí, ya que la suscripción lo hará por nosotros.
-      // Esto previene duplicados y asegura que la data viene de una fuente unificada (PocketBase).
       await _chatRepository.sendMessage(chatId, _currentUserId!, content);
       state = state.copyWith(isLoading: false);
     } catch (e, st) {
@@ -234,8 +216,6 @@ class ChatController extends StateNotifier<ChatState> {
       print(
         'ChatController: Suscripción de mensajes cancelada explícitamente.',
       );
-      // Opcional: Limpiar los mensajes actuales del estado si quieres
-      // que la lista de mensajes se reinicie al salir del chat.
       state = state.copyWith(currentChatMessages: const AsyncValue.data([]));
     }
   }

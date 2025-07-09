@@ -1,5 +1,3 @@
-// lib/application/auth_controller.dart (Este archivo se mantiene igual)
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/auth_repository.dart';

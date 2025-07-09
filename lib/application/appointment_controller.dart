@@ -1,9 +1,7 @@
-// lib/application/appointment_controller.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/appointment_repository.dart';
-import 'package:nexo/application/auth_controller.dart'; // Make sure this path is correct
+import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/appointment.dart';
 
 class AppointmentState {
@@ -36,13 +34,11 @@ class AppointmentController extends StateNotifier<AppointmentState> {
 
   AppointmentController(this._appointmentRepository, this._ref)
     : super(AppointmentState(appointments: [])) {
-    // Listener for professionalProfileProvider (assuming it provides AsyncValue)
     _ref.listen<AsyncValue<pb.RecordModel?>>(professionalProfileProvider, (
       _,
       next,
     ) {
       next.whenOrNull(
-        // This is correct if professionalProfileProvider returns AsyncValue
         data: (profile) {
           if (profile != null) {
             loadProfessionalAppointments();
@@ -60,28 +56,21 @@ class AppointmentController extends StateNotifier<AppointmentState> {
       );
     });
 
-    // --- FIX START ---
-    // Listener for currentUserRecordProvider (assuming it provides RecordModel? directly)
     _ref.listen<pb.RecordModel?>(currentUserRecordProvider, (
       _,
-      nextClientUser, // Renamed 'next' to 'nextClientUser' for clarity
+      nextClientUser,
     ) {
       if (nextClientUser != null) {
-        // User logged in, load client appointments
         loadClientAppointments();
       } else {
-        // User logged out, clear appointments
         if (state.appointments.isNotEmpty) {
           state = state.copyWith(appointments: []);
         }
       }
     });
-    // --- FIX END ---
 
-    // Cargar citas inicialmente si el perfil profesional ya está disponible al crear el controller
     final initialProfileAsyncValue = _ref.read(professionalProfileProvider);
     initialProfileAsyncValue.whenOrNull(
-      // This is correct if professionalProfileProvider returns AsyncValue
       data: (profile) {
         if (profile != null) {
           loadProfessionalAppointments();
@@ -89,14 +78,10 @@ class AppointmentController extends StateNotifier<AppointmentState> {
       },
     );
 
-    // --- FIX START ---
-    // Cargar citas de cliente inicialmente si el usuario ya está disponible al crear el controller
-    // Directly read the RecordModel?, no .value or .whenOrNull
     final initialClientUser = _ref.read(currentUserRecordProvider);
     if (initialClientUser != null) {
       loadClientAppointments();
     }
-    // --- FIX END ---
   }
 
   Future<void> loadProfessionalAppointments() async {
@@ -104,7 +89,6 @@ class AppointmentController extends StateNotifier<AppointmentState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      // Access .value because professionalProfileProvider returns AsyncValue
       final professionalProfile = _ref.read(professionalProfileProvider).value;
 
       if (professionalProfile == null) {
@@ -130,8 +114,6 @@ class AppointmentController extends StateNotifier<AppointmentState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      // --- FIX START ---
-      // Directly read the RecordModel?, no .value needed here
       final clientUser = _ref.read(currentUserRecordProvider);
 
       if (clientUser == null) {
@@ -142,9 +124,7 @@ class AppointmentController extends StateNotifier<AppointmentState> {
         );
         return;
       }
-      // --- FIX END ---
 
-      // Assuming your AppointmentRepository has a method to get appointments by client ID
       final appointments = await _appointmentRepository
           .getAppointmentsForClient(clientUser.id);
       state = state.copyWith(isLoading: false, appointments: appointments);
@@ -210,23 +190,22 @@ class AppointmentController extends StateNotifier<AppointmentState> {
   }
 
   Future<String?> deleteAppointment(String appointmentId) async {
-    final link = _ref.keepAlive(); // Mantener el provider vivo
+    final link = _ref.keepAlive();
     try {
       state = state.copyWith(isLoading: true, errorMessage: null);
       await _appointmentRepository.deleteAppointment(appointmentId);
-      // Actualizar la lista de citas en el estado
       state = state.copyWith(
         isLoading: false,
         appointments: state.appointments
             .where((a) => a.id != appointmentId)
             .toList(),
       );
-      return null; // Éxito
+      return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
-      return e.toString(); // Devolver el error
+      return e.toString();
     } finally {
-      link.close(); // Cerrar el link cuando la operación finalice
+      link.close();
     }
   }
 }
@@ -239,8 +218,6 @@ final appointmentControllerProvider =
       return AppointmentController(appointmentRepository, ref);
     });
 
-// Opcional: un provider para citas agrupadas o filtradas (ej. por "Pendiente", "Confirmada")
-// EXISTING PROVIDERS FOR PROFESSIONAL APPOINTMENTS
 final pendingAppointmentsProvider = Provider.autoDispose<List<Appointment>>((
   ref,
 ) {
@@ -270,15 +247,12 @@ final upcomingAppointmentsProvider = Provider.autoDispose<List<Appointment>>((
     ..sort((a, b) => a.start.compareTo(b.start));
 });
 
-// ADDED: New providers for CLIENT APPOINTMENTS
 final clientUpcomingAppointmentsProvider =
     Provider.autoDispose<List<Appointment>>((ref) {
       final appointmentsState = ref.watch(appointmentControllerProvider);
-      // --- FIX START ---
-      // Read currentUserRecordProvider directly
+
       final currentUser = ref.read(currentUserRecordProvider);
-      if (currentUser == null) return []; // No user logged in
-      // --- FIX END ---
+      if (currentUser == null) return [];
       final now = DateTime.now();
       return appointmentsState.appointments
           .where(
@@ -294,11 +268,8 @@ final clientUpcomingAppointmentsProvider =
 final clientPendingAppointmentsProvider =
     Provider.autoDispose<List<Appointment>>((ref) {
       final appointmentsState = ref.watch(appointmentControllerProvider);
-      // --- FIX START ---
-      // Read currentUserRecordProvider directly
       final currentUser = ref.read(currentUserRecordProvider);
       if (currentUser == null) return [];
-      // --- FIX END ---
       return appointmentsState.appointments
           .where((a) => a.clientId == currentUser.id && a.status == 'Pendiente')
           .toList();
@@ -307,11 +278,9 @@ final clientPendingAppointmentsProvider =
 final clientConfirmedAppointmentsProvider =
     Provider.autoDispose<List<Appointment>>((ref) {
       final appointmentsState = ref.watch(appointmentControllerProvider);
-      // --- FIX START ---
-      // Read currentUserRecordProvider directly
+
       final currentUser = ref.read(currentUserRecordProvider);
       if (currentUser == null) return [];
-      // --- FIX END ---
       return appointmentsState.appointments
           .where(
             (a) =>
@@ -325,11 +294,9 @@ final clientConfirmedAppointmentsProvider =
 final clientCompletedAppointmentsProvider =
     Provider.autoDispose<List<Appointment>>((ref) {
       final appointmentsState = ref.watch(appointmentControllerProvider);
-      // --- FIX START ---
-      // Read currentUserRecordProvider directly
+
       final currentUser = ref.read(currentUserRecordProvider);
       if (currentUser == null) return [];
-      // --- FIX END ---
       final now = DateTime.now();
       return appointmentsState.appointments
           .where(
@@ -339,7 +306,5 @@ final clientCompletedAppointmentsProvider =
                 a.end.isBefore(now),
           )
           .toList()
-        ..sort(
-          (a, b) => b.start.compareTo(a.start),
-        ); // Sort descending for history
+        ..sort((a, b) => b.start.compareTo(a.start));
     });

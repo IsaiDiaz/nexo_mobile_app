@@ -1,5 +1,3 @@
-// lib/application/notes_controller.dart
-
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +13,6 @@ class NotesState {
   final List<LocalNote> notes;
   final bool isLoading;
   final String? errorMessage;
-  // Removed isSyncing for local-only
 
   NotesState({required this.notes, this.isLoading = false, this.errorMessage});
 
@@ -34,13 +31,12 @@ class NotesState {
 
 class NotesController extends StateNotifier<NotesState> {
   final LocalNotesRepository _localNotesRepository;
-  final AuthRepository _authRepository; // Still needed to get professional ID
-  final Ref _ref; // Still needed to get current user
+  final AuthRepository _authRepository;
+  final Ref _ref;
 
   NotesController(this._localNotesRepository, this._authRepository, this._ref)
     : super(NotesState(notes: []));
 
-  // Carga las notas para una cita específica desde la DB local
   Future<void> loadNotesForAppointment(String appointmentId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
@@ -56,7 +52,6 @@ class NotesController extends StateNotifier<NotesState> {
     }
   }
 
-  // Añade una nueva nota localmente
   Future<String?> addNote(
     String appointmentId,
     String noteText,
@@ -68,7 +63,6 @@ class NotesController extends StateNotifier<NotesState> {
     }
     final professionalId = currentUser.id;
 
-    // state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final now = DateTime.now();
       final newNote = LocalNote(
@@ -84,7 +78,6 @@ class NotesController extends StateNotifier<NotesState> {
         return 'Error al guardar la nota localmente.';
       }
 
-      // Guardar adjuntos
       for (var path in attachmentLocalPaths) {
         final fileName = p.basename(path);
         final fileType = _getFileTypeFromPath(path);
@@ -98,11 +91,10 @@ class NotesController extends StateNotifier<NotesState> {
         );
       }
 
-      // Recargar las notas para la UI
       await loadNotesForAppointment(appointmentId);
       _ref.invalidate(appointmentNotesProvider(appointmentId));
 
-      return null; // Éxito
+      return null;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -112,12 +104,11 @@ class NotesController extends StateNotifier<NotesState> {
     }
   }
 
-  // Elimina una nota localmente
   Future<String?> deleteNote(LocalNote note, String appointmentId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _localNotesRepository.deleteNote(note.id!);
-      await loadNotesForAppointment(appointmentId); // Recargar
+      await loadNotesForAppointment(appointmentId);
       _ref.invalidate(appointmentNotesProvider(appointmentId));
 
       return null;
@@ -130,9 +121,6 @@ class NotesController extends StateNotifier<NotesState> {
     }
   }
 
-  // Removed _syncNotes() and _startPeriodicSync() for local-only implementation
-
-  // Helper para obtener el tipo de archivo (MIME) de una ruta
   String _getFileTypeFromPath(String path) {
     final extension = p.extension(path).toLowerCase();
     switch (extension) {
@@ -152,7 +140,7 @@ class NotesController extends StateNotifier<NotesState> {
       case '.m4a':
         return 'audio/m4a';
       default:
-        return 'application/octet-stream'; // Tipo genérico
+        return 'application/octet-stream';
     }
   }
 }
@@ -164,19 +152,12 @@ final notesControllerProvider =
       return NotesController(localNotesRepo, authRepo, ref);
     });
 
-// Proveedor para obtener las notas y adjuntos de una cita específica (para la UI)
 final appointmentNotesProvider =
     FutureProvider.family<Map<LocalNote, List<NoteAttachment>>, String>((
       ref,
       appointmentId,
     ) async {
-      // No necesitas watch() aquí si tu NotesController NO mantiene un mapa global de todas las notas.
-      // Si tu NotesController solo maneja la lista de la cita actual, entonces este FutureProvider
-      // debe ser el que va directamente al repositorio.
       final notesRepo = ref.read(localNotesRepositoryProvider);
-
-      // Es importante que la UI muestre el estado de carga y error de este FutureProvider.
-      // El NotesState del NotesController solo refleja el estado de sus *propias* operaciones.
 
       final notes = await notesRepo.getNotesForAppointment(appointmentId);
       final Map<LocalNote, List<NoteAttachment>> notesWithAttachments = {};
