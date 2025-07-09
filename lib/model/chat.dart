@@ -6,7 +6,6 @@ class Chat {
   final String secondUserId;
   final DateTime createdAt;
 
-  // Opcional: para expandir los datos de los usuarios en el chat
   final RecordModel? firstUserRecord;
   final RecordModel? secondUserRecord;
 
@@ -44,7 +43,6 @@ class Chat {
     );
   }
 
-  // Método para obtener el ID del otro participante en el chat
   String getOtherParticipantId(String currentUserId) {
     if (firstUserId == currentUserId) {
       return secondUserId;

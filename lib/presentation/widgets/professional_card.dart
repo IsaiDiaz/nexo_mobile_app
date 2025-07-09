@@ -1,10 +1,8 @@
-// lib/presentation/widgets/professional_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/presentation/theme/app_colors.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Para obtener la URL de PocketBase
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nexo/data/auth_repository.dart';
 
 class ProfessionalCard extends ConsumerWidget {
@@ -22,9 +20,8 @@ class ProfessionalCard extends ConsumerWidget {
     if (userRecord != null) {
       final avatar = userRecord.get<String?>('avatar');
       if (avatar != null && avatar.isNotEmpty) {
-        // Obtener la instancia de PocketBase del authRepositoryProvider
         final pocketBase = ref.read(authRepositoryProvider).pocketBase;
-        // Usar pocketBase.files.getURL para construir la URL
+
         return pocketBase.files.getURL(userRecord, avatar).toString();
       }
     }
@@ -55,7 +52,6 @@ class ProfessionalCard extends ConsumerWidget {
     final String businessName =
         professionalProfile.get<String?>('business_name') ?? 'Sin Negocio';
 
-    // Pasar ref a la función _getAvatarUrl
     final avatarUrl = _getAvatarUrl(professionalProfile, ref);
 
     return Card(

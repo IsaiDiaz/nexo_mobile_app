@@ -1,13 +1,10 @@
-// lib/presentation/pages/registration/user_registration_page.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/registration_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
-import 'package:image_picker/image_picker.dart'; // Asegúrate de tener la dependencia en pubspec.yaml
+import 'package:image_picker/image_picker.dart';
 
-// StateProvider para la ruta temporal de la imagen seleccionada
 final selectedAvatarPathProvider = StateProvider.autoDispose<String?>(
   (ref) => null,
 );
@@ -25,7 +22,6 @@ class UserRegistrationPage extends ConsumerWidget {
     final registrationState = ref.watch(registrationControllerProvider);
     final selectedAvatarPath = ref.watch(selectedAvatarPathProvider);
 
-    // Precargar datos si ya existen en el controlador (ej. al volver atrás)
     _emailController.text = registrationState.registrationData.email ?? '';
     _passwordController.text =
         registrationState.registrationData.password ?? '';

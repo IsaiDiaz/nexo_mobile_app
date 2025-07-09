@@ -1,5 +1,3 @@
-// lib/data/local_notes_repository.dart
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,12 +16,7 @@ class LocalNotesRepository {
   Future<Database> _initDB() async {
     String path = await getDatabasesPath();
     path = join(path, 'nexo_notes.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDb,
-      onUpgrade: _onUpgrade,
-    );
+    return await openDatabase(path, version: 1, onCreate: _createDb);
   }
 
   Future<void> _createDb(Database db, int version) async {
@@ -50,16 +43,6 @@ class LocalNotesRepository {
       )
     ''');
   }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Aquí puedes manejar migraciones de la base de datos si cambias el esquema en el futuro.
-    // Si cambiaste la estructura de las tablas como ahora (quitando campos),
-    // podrías necesitar borrar la DB para que se cree con la nueva estructura
-    // o implementar un ALTER TABLE. Para empezar, si tienes problemas,
-    // puedes desinstalar y reinstalar la app en el emulador/dispositivo.
-  }
-
-  // --- Operaciones para LocalNote ---
 
   Future<int> insertNote(LocalNote note) async {
     final db = await database;
@@ -104,14 +87,10 @@ class LocalNotesRepository {
     return List.generate(maps.length, (i) => LocalNote.fromMap(maps[i]));
   }
 
-  // getPendingNotesForSync() method is removed for local-only implementation
-
   Future<void> deleteNote(int noteId) async {
     final db = await database;
     await db.delete('consultation_notes', where: 'id = ?', whereArgs: [noteId]);
   }
-
-  // --- Operaciones para NoteAttachment ---
 
   Future<int> insertAttachment(NoteAttachment attachment) async {
     final db = await database;
@@ -142,8 +121,6 @@ class LocalNotesRepository {
     );
     return List.generate(maps.length, (i) => NoteAttachment.fromMap(maps[i]));
   }
-
-  // getPendingAttachmentsForSync() method is removed for local-only implementation
 
   Future<void> deleteAttachment(int attachmentId) async {
     final db = await database;

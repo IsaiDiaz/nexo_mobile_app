@@ -1,22 +1,11 @@
-// lib/presentation/widgets/appointment_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nexo/model/appointment.dart';
-import 'package:nexo/presentation/theme/app_colors.dart'; // Make sure this path is correct
+import 'package:nexo/presentation/theme/app_colors.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
-  // You can add callbacks for actions like cancel or reschedule
-  // final VoidCallback? onCancel;
-  // final VoidCallback? onReschedule;
-
-  const AppointmentCard({
-    super.key,
-    required this.appointment,
-    // this.onCancel,
-    // this.onReschedule,
-  });
+  const AppointmentCard({super.key, required this.appointment});
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +21,14 @@ class AppointmentCard extends StatelessWidget {
         ? DarkAppColors.cardAndInputFields
         : LightAppColors.cardAndInputFields;
 
-    // Safely access professional name and category from the expanded record
-    // Remember the expand in repository should be 'professional.user'
     final professionalName =
         appointment.professionalRecord?.get<String?>('expand.user.name') ??
-        appointment.professionalRecord?.get<String?>(
-          'name',
-        ) ?? // Fallback to 'name' field on professional itself
+        appointment.professionalRecord?.get<String?>('name') ??
         'Profesional Desconocido';
     final professionalCategory =
         appointment.professionalRecord?.get<String?>('category') ??
         'No especificada';
 
-    // Date and time formatting
     final dateFormat = DateFormat('EEEE, d MMMM y', 'es');
     final timeFormat = DateFormat('HH:mm', 'es');
 
@@ -119,17 +103,6 @@ class AppointmentCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // Example of action buttons (uncomment and implement onPressed if needed)
-                // if (appointment.status == 'Pendiente')
-                //   ElevatedButton(
-                //     onPressed: onCancel,
-                //     style: ElevatedButton.styleFrom(
-                //       backgroundColor: Colors.red.withOpacity(0.1),
-                //       foregroundColor: Colors.red,
-                //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                //     ),
-                //     child: const Text('Cancelar'),
-                //   ),
               ],
             ),
           ],
@@ -146,8 +119,8 @@ class AppointmentCard extends StatelessWidget {
         return Colors.green;
       case 'Cancelada':
         return Colors.red;
-      case 'Completada': // You might add a 'Completada' status for past confirmed appointments
-        return colorScheme.primary; // Or a specific color for completed
+      case 'Completada':
+        return colorScheme.primary;
       default:
         return Colors.grey;
     }

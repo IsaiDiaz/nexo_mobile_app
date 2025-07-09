@@ -1,8 +1,6 @@
-// lib/presentation/views/professional/professional_appointments_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart'; // Para formatear fechas más bonitas
+import 'package:intl/intl.dart';
 import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
@@ -25,9 +23,8 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
         ? DarkAppColors.cardAndInputFields
         : LightAppColors.cardAndInputFields;
 
-    // Observar el estado del controlador de citas
     final appointmentState = ref.watch(appointmentControllerProvider);
-    // Observar las citas próximas (puedes cambiar a 'pendingAppointmentsProvider' si prefieres)
+
     final upcomingAppointments = ref.watch(upcomingAppointmentsProvider);
 
     if (appointmentState.isLoading && appointmentState.appointments.isEmpty) {
@@ -73,7 +70,6 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       );
     }
 
-    // Agrupar citas por fecha
     final Map<DateTime, List<Appointment>> groupedByDate = {};
     for (var appointment in upcomingAppointments) {
       final dateOnly = DateTime(
@@ -84,7 +80,6 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       groupedByDate.putIfAbsent(dateOnly, () => []).add(appointment);
     }
 
-    // Ordenar las fechas de forma ascendente
     final sortedDates = groupedByDate.keys.toList()
       ..sort((a, b) => a.compareTo(b));
 
@@ -105,10 +100,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                 horizontal: 8.0,
               ),
               child: Text(
-                DateFormat(
-                  'EEEE, d MMMM y',
-                  'es',
-                ).format(date), // Formato de fecha en español
+                DateFormat('EEEE, d MMMM y', 'es').format(date),
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: primaryTextColor,
                   fontWeight: FontWeight.bold,
@@ -126,7 +118,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Cliente: ${appointment.clientName}', // Nombre del cliente
+                        'Cliente: ${appointment.clientName}',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: primaryTextColor,
                           fontWeight: FontWeight.bold,
@@ -151,11 +143,11 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                           color: _getStatusColor(
                             appointment.status,
                             isDarkMode,
-                          ), // Helper para color de estado
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Acciones para la cita (Confirmar/Cancelar)
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -240,14 +232,13 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                 ),
               );
             }).toList(),
-            const SizedBox(height: 20), // Espacio entre días
+            const SizedBox(height: 20),
           ],
         );
       },
     );
   }
 
-  // Helper para determinar el color del estado
   Color _getStatusColor(String status, bool isDarkMode) {
     switch (status) {
       case 'Pendiente':
@@ -264,7 +255,6 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
     }
   }
 
-  // Helper para manejar la actualización de estado
   void _updateStatus(
     WidgetRef ref,
     String appointmentId,

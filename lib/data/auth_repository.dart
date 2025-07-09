@@ -1,5 +1,3 @@
-// lib/data/auth_repository.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -195,15 +193,13 @@ class AuthRepository {
     String? category,
   }) async {
     try {
-      // expand 'user' para obtener el nombre, email, etc. del usuario autenticado asociado
-      // expand 'available_schedules' si quieres mostrar sus horarios en la búsqueda
       final records = await pocketBase
           .collection('professional_profile')
           .getFullList(
             filter: category != null && category.isNotEmpty
-                ? 'category = "$category"' // Ejemplo de filtro por especialización (si es campo texto)
+                ? 'category = "$category"'
                 : '',
-            expand: 'user', // <--- Importante: expandir usuario y horarios
+            expand: 'user',
           );
 
       print(records);

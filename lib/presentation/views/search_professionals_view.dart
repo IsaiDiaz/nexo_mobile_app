@@ -1,10 +1,8 @@
-// lib/presentation/views/search_professionals_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/search_professionals_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
-import 'package:nexo/presentation/widgets/professional_card.dart'; // Crearemos este widget en el siguiente paso
+import 'package:nexo/presentation/widgets/professional_card.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/presentation/widgets/professional_details_sheet.dart';
 
@@ -31,7 +29,7 @@ class SearchProfessionalsView extends ConsumerWidget {
     );
 
     final List<String> categories = [
-      '', // Opción para "Todas las categorías"
+      '',
       'Salud',
       'Legal',
       'Tecnología',
@@ -45,7 +43,6 @@ class SearchProfessionalsView extends ConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Campo de búsqueda de texto
               TextField(
                 controller: TextEditingController(
                   text: searchState.searchQuery,
@@ -61,7 +58,7 @@ class SearchProfessionalsView extends ConsumerWidget {
                   prefixIcon: Icon(Icons.search, color: secondaryTextColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none, // Para un look más plano
+                    borderSide: BorderSide.none,
                   ),
                   filled: true,
                   fillColor: cardAndInputColor,
@@ -73,7 +70,7 @@ class SearchProfessionalsView extends ConsumerWidget {
                 style: TextStyle(color: primaryTextColor),
               ),
               const SizedBox(height: 12),
-              // Dropdown para filtrar por categoría
+
               DropdownButtonFormField<String>(
                 value: searchState.selectedCategory.isEmpty
                     ? ''
@@ -105,8 +102,6 @@ class SearchProfessionalsView extends ConsumerWidget {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  // Si el valor es null (raro en DropdownButtonFormField, pero por seguridad)
-                  // o si es la opción vacía, pasamos una cadena vacía al controlador.
                   searchController.updateSelectedCategory(value ?? '');
                 },
               ),
@@ -164,9 +159,7 @@ class SearchProfessionalsView extends ConsumerWidget {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                ), // Ajustar padding
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 itemCount: searchState.professionals.length,
                 itemBuilder: (context, index) {
                   final professionalProfile = searchState.professionals[index];

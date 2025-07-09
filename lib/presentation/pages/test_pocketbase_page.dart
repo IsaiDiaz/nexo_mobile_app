@@ -1,19 +1,15 @@
-// lib/presentation/pages/test_pocketbase_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexo/application/test_pocketbase_controller.dart'; // Importa el nuevo controlador
-import 'package:nexo/presentation/theme/app_colors.dart'; // Para los colores del tema
+import 'package:nexo/application/test_pocketbase_controller.dart';
+import 'package:nexo/presentation/theme/app_colors.dart';
 
 class TestPocketbasePage extends ConsumerWidget {
   const TestPocketbasePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Observar el estado del controlador
     final testState = ref.watch(testPocketbaseControllerProvider);
 
-    // Lógica para obtener los colores del tema
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final primaryTextColor = isDarkMode
@@ -44,9 +40,8 @@ class TestPocketbasePage extends ConsumerWidget {
             children: [
               ElevatedButton(
                 onPressed: testState.isLoading
-                    ? null // Deshabilitar el botón si está cargando
+                    ? null
                     : () {
-                        // Llamar a la función para obtener usuarios
                         ref
                             .read(testPocketbaseControllerProvider.notifier)
                             .fetchUsers();
@@ -60,9 +55,7 @@ class TestPocketbasePage extends ConsumerWidget {
                   ),
                 ),
                 child: testState.isLoading
-                    ? const CircularProgressIndicator(
-                        color: Colors.black,
-                      ) // Indicador de carga
+                    ? const CircularProgressIndicator(color: Colors.black)
                     : const Text(
                         'Obtener Usuarios de PocketBase',
                         style: TextStyle(
@@ -73,7 +66,7 @@ class TestPocketbasePage extends ConsumerWidget {
               ),
               const SizedBox(height: 30),
               Text(
-                testState.message, // Mostrar el mensaje de estado/respuesta
+                testState.message,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: primaryTextColor),
               ),

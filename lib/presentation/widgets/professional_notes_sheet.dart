@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:intl/intl.dart'; // Para formatear fechas más bonitas
+import 'package:intl/intl.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 
 class ProfessionalNotesSheet extends ConsumerStatefulWidget {
@@ -37,7 +37,6 @@ class _ProfessionalNotesSheetState
   @override
   void initState() {
     super.initState();
-    // _loadExistingNotes();
   }
 
   @override
@@ -53,7 +52,6 @@ class _ProfessionalNotesSheetState
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    // Request permissions more granularly as per Android 13+ guidelines
     final status = source == ImageSource.camera
         ? await Permission.camera.request()
         : await Permission.photos.request();
@@ -115,12 +113,9 @@ class _ProfessionalNotesSheetState
   void _removeAttachment(String path) {
     setState(() {
       _attachmentPaths.remove(path);
-      // Opcional: Eliminar el archivo físico si ya no se necesita
-      // File(path).delete(); // Ten cuidado con esto si el archivo podría ser referenciado por otras notas temporales
     });
   }
 
-  // Helper para mostrar miniaturas de adjuntos (imágenes y audio)
   Widget _buildAttachmentThumbnail(NoteAttachment attachment) {
     final isImage = attachment.fileType.startsWith('image/');
     final isAudio = attachment.fileType.startsWith('audio/');
@@ -134,7 +129,6 @@ class _ProfessionalNotesSheetState
 
     return GestureDetector(
       onTap: () {
-        // Implementar visualizador de imágenes o reproductor de audio
         if (isImage) {
           showDialog(
             context: context,
@@ -149,7 +143,6 @@ class _ProfessionalNotesSheetState
             ),
           );
         } else if (isAudio) {
-          // Implementar reproducción de audio
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -157,7 +150,6 @@ class _ProfessionalNotesSheetState
               ),
             ),
           );
-          // Puedes usar un paquete como audioplayers para esto
         }
       },
       child: Chip(
@@ -281,7 +273,7 @@ class _ProfessionalNotesSheetState
               ),
               if (_attachmentPaths.isNotEmpty)
                 Container(
-                  height: 60, // Ajusta la altura si es necesario para los chips
+                  height: 60,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _attachmentPaths.length,
@@ -358,7 +350,7 @@ class _ProfessionalNotesSheetState
                                     color: primaryTextColor,
                                   ),
                                 ),
-                                // No mostramos estado de sincronización ya que es local-only
+
                                 if (attachments.isNotEmpty) ...[
                                   const SizedBox(height: 8),
                                   Text(

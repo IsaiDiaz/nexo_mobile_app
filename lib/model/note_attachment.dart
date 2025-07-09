@@ -1,12 +1,9 @@
-// lib/model/note_attachment.dart
-
-// Represents a local note attachment (image, audio, etc.)
 class NoteAttachment {
-  final int? id; // Local DB ID
-  final int noteId; // Foreign key to LocalNote's local DB ID
-  final String filePathLocal; // Path on device's file system
+  final int? id;
+  final int noteId;
+  final String filePathLocal;
   final String fileName;
-  final String fileType; // e.g., 'image/jpeg', 'audio/aac'
+  final String fileType;
 
   NoteAttachment({
     this.id,
@@ -16,7 +13,6 @@ class NoteAttachment {
     required this.fileType,
   });
 
-  // Convert a NoteAttachment into a Map for SQLite
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -27,7 +23,6 @@ class NoteAttachment {
     };
   }
 
-  // Convert a Map (from SQLite) into a NoteAttachment object
   factory NoteAttachment.fromMap(Map<String, dynamic> map) {
     return NoteAttachment(
       id: map['id'] as int?,

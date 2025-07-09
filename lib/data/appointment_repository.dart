@@ -8,21 +8,19 @@ class AppointmentRepository {
 
   AppointmentRepository(this._pb);
 
-  // Método para obtener citas para un profesional específico
   Future<List<Appointment>> getAppointmentsForProfessional(
     String professionalProfileId, {
-    String statusFilter = '', // Opcional: para filtrar por estado
-    String orderBy = '-start', // Ordenar por fecha de inicio descendente
+    String statusFilter = '',
+    String orderBy = '-start',
   }) async {
     try {
-      // Necesitamos expandir los registros de 'client' para obtener el nombre del cliente
       final records = await _pb
           .collection('appointment')
           .getFullList(
             filter:
                 'professional = "$professionalProfileId"${statusFilter.isNotEmpty ? ' && status = "$statusFilter"' : ''}',
             sort: orderBy,
-            expand: 'client', // Expandir el registro del cliente
+            expand: 'client',
           );
 
       return records.map((record) => Appointment.fromRecord(record)).toList();
@@ -37,7 +35,6 @@ class AppointmentRepository {
     }
   }
 
-  // Método para actualizar el estado de una cita (ej. confirmar/cancelar)
   Future<Appointment> updateAppointmentStatus(
     String appointmentId,
     String newStatus,
@@ -46,7 +43,6 @@ class AppointmentRepository {
       final updatedRecord = await _pb
           .collection('appointment')
           .update(appointmentId, body: {'status': newStatus});
-      // Opcional: re-expandir si necesitas los datos relacionados actualizados
       final reFetchedRecord = await _pb
           .collection('appointment')
           .getOne(appointmentId, expand: 'client');
@@ -75,10 +71,9 @@ class AppointmentRepository {
       final newAppointmentData = {
         'start': start.toIso8601String(),
         'end': end.toIso8601String(),
-        'professional':
-            professionalProfileId, // Campo de relación al perfil profesional
-        'client': clientId, // Campo de relación al usuario cliente
-        'type': service, // CORRECCIÓN: Mapear a 'type' según tu DB
+        'professional': professionalProfileId,
+        'client': clientId,
+        'type': service,
         'original_fee': originalFee,
         'status': status,
       };
@@ -102,9 +97,8 @@ class AppointmentRepository {
           .collection('appointment')
           .getFullList(
             filter: 'client = "$clientId"',
-            sort: '-start', // Sort by start date, descending
-            expand:
-                'professional.user', // Expand professional and its user data
+            sort: '-start',
+            expand: 'professional.user',
           );
       return records.map((record) => Appointment.fromRecord(record)).toList();
     } on pb.ClientException catch (e) {
@@ -120,7 +114,6 @@ class AppointmentRepository {
     }
   }
 
-  //deleteAppointment
   Future<void> deleteAppointment(String appointmentId) async {
     try {
       await _pb.collection('appointment').delete(appointmentId);
@@ -132,10 +125,6 @@ class AppointmentRepository {
       throw Exception('Ocurrió un error inesperado al eliminar cita: $e');
     }
   }
-
-  // Puedes añadir métodos para crear, eliminar citas si el profesional lo hace
-  // o si decides que el profesional pueda crear citas directamente.
-  // Por ahora, nos centraremos en la visualización y actualización de estado.
 }
 
 final appointmentRepositoryProvider = Provider<AppointmentRepository>((ref) {

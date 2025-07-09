@@ -1,5 +1,3 @@
-// lib/presentation/pages/color_palette_page.dart
-
 import 'package:flutter/material.dart';
 
 class ColorPalettePage extends StatelessWidget {
@@ -10,28 +8,23 @@ class ColorPalettePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paletas de Colores de la App'),
-        backgroundColor: const Color(
-          0xFF0D2B3E,
-        ), // Un azul oscuro para el AppBar en esta demo
+        backgroundColor: const Color(0xFF0D2B3E),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Paleta Oscura ---
             _buildPaletteSection(
               context,
               title: 'Paleta para Tema Oscuro',
-              backgroundColor: const Color(
-                0xFF0D2B3E,
-              ), // Fondo principal oscuro
+              backgroundColor: const Color(0xFF0D2B3E),
               elements: [
                 _ColorItem(
                   name: 'Fondo principal',
                   color: const Color(0xFF0D2B3E),
                   hex: '#0D2B3E',
-                  textColor: Colors.white, // Texto para contrastar en el swatch
+                  textColor: Colors.white,
                 ),
                 _ColorItem(
                   name: 'Tarjetas y campos de entrada',
@@ -43,7 +36,7 @@ class ColorPalettePage extends StatelessWidget {
                   name: 'Texto principal',
                   color: Colors.white,
                   hex: '#FFFFFF',
-                  textColor: Colors.black, // Texto negro para el swatch blanco
+                  textColor: Colors.black,
                 ),
                 _ColorItem(
                   name: 'Botones destacados',
@@ -59,12 +52,12 @@ class ColorPalettePage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 40), // Espacio entre paletas
-            // --- Paleta Clara ---
+            const SizedBox(height: 40),
+
             _buildPaletteSection(
               context,
               title: 'Paleta para Tema Claro',
-              backgroundColor: const Color(0xFFF6F9FC), // Fondo principal claro
+              backgroundColor: const Color(0xFFF6F9FC),
               elements: [
                 _ColorItem(
                   name: 'Fondo principal',
@@ -112,7 +105,7 @@ class ColorPalettePage extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      color: backgroundColor, // Fondo de la sección de la paleta
+      color: backgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -123,7 +116,7 @@ class ColorPalettePage extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: backgroundColor.computeLuminance() > 0.5
                   ? Colors.black
-                  : Colors.white, // Contraste automático para el título
+                  : Colors.white,
             ),
           ),
           const SizedBox(height: 20),
@@ -133,7 +126,7 @@ class ColorPalettePage extends StatelessWidget {
               item.color,
               item.hex,
               item.textColor,
-              backgroundColor, // Fondo para el texto informativo
+              backgroundColor,
             ),
           ),
         ],
@@ -196,12 +189,11 @@ class ColorPalettePage extends StatelessWidget {
   }
 }
 
-// Clase auxiliar para los ítems de color
 class _ColorItem {
   final String name;
   final Color color;
   final String hex;
-  final Color textColor; // Color del texto dentro del swatch para legibilidad
+  final Color textColor;
 
   _ColorItem({
     required this.name,

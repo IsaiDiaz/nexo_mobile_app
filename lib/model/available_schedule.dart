@@ -31,11 +31,8 @@ class AvailableSchedule {
       'professional': professionalProfileId,
       'day_of_week': dayOfWeek,
       'start_time':
-          // should be in this regex format ^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$
-          // '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}:00.000',
           '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}:00.000',
       'end_time':
-          // '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00.000',
           '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00.000',
     };
   }

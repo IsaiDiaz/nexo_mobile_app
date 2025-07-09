@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/chat_controller.dart';
 import 'package:nexo/data/chat_repository.dart';
 import 'package:nexo/model/chat.dart';
-import 'package:nexo/application/auth_controller.dart'; // Para obtener el currentUserRecordProvider
-import 'package:nexo/presentation/views/chat_detail_view.dart'; // Importar la vista de detalle
-import 'package:nexo/presentation/theme/app_colors.dart'; // Para los colores
+import 'package:nexo/application/auth_controller.dart';
+import 'package:nexo/presentation/views/chat_detail_view.dart';
+import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 
 class MessagesView extends ConsumerWidget {
@@ -15,20 +15,13 @@ class MessagesView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chatState = ref.watch(chatControllerProvider);
     final chatController = ref.read(chatControllerProvider.notifier);
-    final currentUser = ref.watch(
-      currentUserRecordProvider,
-    ); // Obtener el usuario actual para identificar al otro participante
+    final currentUser = ref.watch(currentUserRecordProvider);
 
-    // Cargar los chats del usuario cuando la vista se inicialice
-    // Se asegura de que se cargue una vez al entrar a esta vista.
-    // Aunque ya se carga en el constructor del controlador, esto es útil si el controlador se descarta y recrea
     ref.listen<AsyncValue<List<Chat>>>(
       chatControllerProvider.select((state) => state.userChats),
       (previous, next) {
         next.when(
-          data: (chats) {
-            // Opcional: podrías hacer algo cuando los chats se carguen
-          },
+          data: (chats) {},
           loading: () {},
           error: (e, st) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -67,14 +60,11 @@ class MessagesView extends ConsumerWidget {
             itemCount: chats.length,
             itemBuilder: (context, index) {
               final chat = chats[index];
-              // Obtener el ID del otro participante en el chat
+
               final otherParticipantId = chat.getOtherParticipantId(
                 currentUser.id,
               );
 
-              // Buscar el RecordModel del otro participante para obtener su nombre/avatar
-              // Esto es si ya lo expandiste en el ChatRepository.
-              // Si no, tendrías que hacer una llamada adicional o confiar en el ID.
               pb.RecordModel? otherUserRecord;
               if (chat.firstUserRecord?.id == otherParticipantId) {
                 otherUserRecord = chat.firstUserRecord;
@@ -90,7 +80,7 @@ class MessagesView extends ConsumerWidget {
                       otherUserRecord!.data['avatar'].isNotEmpty
                   ? ref
                         .read(chatRepositoryProvider)
-                        .pocketBaseInstance // Usa el getter
+                        .pocketBaseInstance
                         .files
                         .getURL(otherUserRecord, otherUserRecord.data['avatar'])
                         .toString()
@@ -116,10 +106,7 @@ class MessagesView extends ConsumerWidget {
                                 ? otherUserName[0].toUpperCase()
                                 : '?',
                             style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  color: Colors
-                                      .black, // Color para el texto de avatar
-                                ),
+                                ?.copyWith(color: Colors.black),
                           )
                         : null,
                   ),
@@ -132,7 +119,7 @@ class MessagesView extends ConsumerWidget {
                     ),
                   ),
                   subtitle: Text(
-                    'Chat ID: ${chat.id}', // Puedes mostrar el último mensaje aquí si lo tienes en el modelo Chat
+                    'Chat ID: ${chat.id}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? DarkAppColors.secondaryText
@@ -140,7 +127,6 @@ class MessagesView extends ConsumerWidget {
                     ),
                   ),
                   onTap: () {
-                    // Al tocar un chat, establece el chat seleccionado y navega a la vista de detalle
                     ref.read(currentSelectedChatProvider.notifier).state = chat;
                     Navigator.of(context).push(
                       MaterialPageRoute(

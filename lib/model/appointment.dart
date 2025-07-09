@@ -11,10 +11,8 @@ class Appointment {
   final String professionalProfileId;
   final String? type;
   final pb.RecordModel _originalRecord;
-  final pb.RecordModel?
-  professionalRecord; // ADDED: RecordModel for expanded professional data
-  final pb.RecordModel?
-  clientRecord; // OPTIONAL: RecordModel for expanded client data (useful for professional view)
+  final pb.RecordModel? professionalRecord;
+  final pb.RecordModel? clientRecord;
 
   Appointment({
     required this.id,
@@ -32,21 +30,15 @@ class Appointment {
   }) : _originalRecord = originalRecord;
 
   factory Appointment.fromRecord(pb.RecordModel record) {
-    final startUtc = DateTime.parse(
-      record.data['start'] as String,
-    ).toLocal(); // Convertir a local para mostrar
-    final endUtc = DateTime.parse(
-      record.data['end'] as String,
-    ).toLocal(); // Convertir a local para mostrar
+    final startUtc = DateTime.parse(record.data['start'] as String).toLocal();
+    final endUtc = DateTime.parse(record.data['end'] as String).toLocal();
 
     final professionalRecord = record.get<pb.RecordModel?>(
       'expand.professional',
     );
     final clientRecord = record.get<pb.RecordModel?>('expand.client');
 
-    // Acceder a los datos expandidos si existen
-    final professionalId =
-        record.data['professional'] as String; // o 'professional_profile'
+    final professionalId = record.data['professional'] as String;
     final clientId = record.data['client'] as String;
 
     return Appointment(
@@ -57,17 +49,14 @@ class Appointment {
       discountFee: (record.data['discount_fee'] as num?)?.toDouble(),
       status: record.data['status'] as String,
       clientId: record.data['client'] as String,
-      professionalProfileId:
-          record.data['professional']
-              as String, // Revisa el nombre del campo de relación
+      professionalProfileId: record.data['professional'] as String,
       type: record.data['type'] as String,
-      originalRecord: record, // Guardamos el record original
+      originalRecord: record,
       professionalRecord: professionalRecord,
       clientRecord: clientRecord,
     );
   }
 
-  // Helper para mostrar la hora de inicio formateada
   String get formattedStartTime {
     final hour = start.hour;
     final minute = start.minute.toString().padLeft(2, '0');
@@ -76,7 +65,6 @@ class Appointment {
     return '$displayHour:$minute $period';
   }
 
-  // Helper para mostrar la hora de fin formateada
   String get formattedEndTime {
     final hour = end.hour;
     final minute = end.minute.toString().padLeft(2, '0');
@@ -85,19 +73,13 @@ class Appointment {
     return '$displayHour:$minute $period';
   }
 
-  // Helper para obtener el nombre del cliente
   String get clientName {
-    // Intentamos obtener el RecordModel del cliente expandido
-    // Asumimos que el campo de relación es 'client' y que la colección 'users' tiene un campo 'name'
     final clientExpandedRecord = _originalRecord.get<pb.RecordModel?>(
       'expand.client',
     );
-
-    // Si el record expandido existe, obtenemos su campo 'name'
     return clientExpandedRecord?.get<String>('name') ?? 'Cliente Desconocido';
   }
 
-  // Método toJson para enviar datos a PocketBase (para crear/actualizar)
   Map<String, dynamic> toJson() {
     return {
       'start': start.toIso8601String(),

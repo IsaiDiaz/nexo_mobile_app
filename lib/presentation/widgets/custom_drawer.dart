@@ -88,7 +88,7 @@ class CustomDrawer extends ConsumerWidget {
             ),
             decoration: BoxDecoration(color: theme.appBarTheme.backgroundColor),
           ),
-          // Opciones específicas del rol ACTIVO
+
           if (activeRole == UserRole.client) ...[
             _buildDrawerItem(
               context,
@@ -107,7 +107,7 @@ class CustomDrawer extends ConsumerWidget {
             _buildDrawerItem(
               context,
               ref,
-              HomeSection.messages, // Aquí se enlaza con la nueva sección
+              HomeSection.messages,
               'Mensajes',
               Icons.message,
             ),
@@ -129,7 +129,7 @@ class CustomDrawer extends ConsumerWidget {
             _buildDrawerItem(
               context,
               ref,
-              HomeSection.messages, // Aquí se enlaza con la nueva sección
+              HomeSection.messages,
               'Mensajes',
               Icons.message,
             ),
@@ -149,7 +149,7 @@ class CustomDrawer extends ConsumerWidget {
             ),
           ],
           const Divider(),
-          // Opciones compartidas por ambos roles
+
           _buildDrawerItem(
             context,
             ref,
@@ -165,7 +165,7 @@ class CustomDrawer extends ConsumerWidget {
               'Editar Perfil Profesional',
               Icons.business,
             ),
-          // Opción para cambiar de rol si tiene ambos
+
           if (hasBothRoles)
             ListTile(
               leading: Icon(Icons.swap_horiz, color: secondaryTextColor),
@@ -184,7 +184,7 @@ class CustomDrawer extends ConsumerWidget {
                 onRoleSwitch(newRole);
               },
             ),
-          // Opción para obtener el rol que le falta
+
           if (!hasBothRoles)
             ListTile(
               leading: Icon(
@@ -200,9 +200,7 @@ class CustomDrawer extends ConsumerWidget {
                 ),
               ),
               onTap: () {
-                onSectionSelected(
-                  HomeSection.getOtherRole,
-                ); // Llama a la sección para manejar esta lógica
+                onSectionSelected(HomeSection.getOtherRole);
               },
             ),
           _buildDrawerItem(
@@ -221,7 +219,7 @@ class CustomDrawer extends ConsumerWidget {
               ),
             ),
             onTap: () async {
-              Navigator.of(context).pop(); // Cierra el drawer antes de logout
+              Navigator.of(context).pop();
               await ref.read(authControllerProvider.notifier).signOut();
             },
           ),

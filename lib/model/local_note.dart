@@ -1,13 +1,9 @@
-// lib/model/local_note.dart
-
 import 'package:flutter/foundation.dart';
 
 class LocalNote {
-  final int? id; // Local DB ID
-  final String
-  appointmentId; // PocketBase Appointment ID (still needed to link to the appointment displayed)
-  final String
-  professionalId; // PocketBase Professional ID (still needed to identify who wrote the note)
+  final int? id;
+  final String appointmentId;
+  final String professionalId;
   final String noteText;
   final DateTime createdAt;
   final DateTime lastModifiedAt;
@@ -21,7 +17,6 @@ class LocalNote {
     required this.lastModifiedAt,
   });
 
-  // Convert a LocalNote into a Map for SQLite
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -33,7 +28,6 @@ class LocalNote {
     };
   }
 
-  // Convert a Map (from SQLite) into a LocalNote object
   factory LocalNote.fromMap(Map<String, dynamic> map) {
     return LocalNote(
       id: map['id'] as int?,
@@ -45,7 +39,6 @@ class LocalNote {
     );
   }
 
-  // Helper to create a copy with updated values
   LocalNote copyWith({
     int? id,
     String? appointmentId,

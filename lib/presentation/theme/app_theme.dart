@@ -1,10 +1,7 @@
-// lib/presentation/theme/app_theme.dart
-
 import 'package:flutter/material.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 
 class AppTheme {
-  // Tema Oscuro
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: DarkAppColors.primaryBackground,
@@ -59,9 +56,7 @@ class AppTheme {
       ),
     ),
 
-    // ¡Aquí está el cambio! Usar CardThemeData en lugar de CardTheme
     cardTheme: CardThemeData(
-      // <-- CAMBIO AQUÍ
       color: DarkAppColors.cardAndInputFields,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -87,7 +82,6 @@ class AppTheme {
     ),
   );
 
-  // Tema Claro (similar al oscuro, pero con los colores de LightAppColors)
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: LightAppColors.primaryBackground,
@@ -142,9 +136,7 @@ class AppTheme {
       ),
     ),
 
-    // ¡Aquí está el cambio! Usar CardThemeData en lugar de CardTheme
     cardTheme: CardThemeData(
-      // <-- CAMBIO AQUÍ
       color: LightAppColors.cardAndInputFields,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

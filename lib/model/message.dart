@@ -3,11 +3,10 @@ import 'package:pocketbase/pocketbase.dart';
 class Message {
   final String id;
   final String chatId;
-  final String senderId; // El ID del usuario que envió el mensaje
+  final String senderId;
   final String content;
   final DateTime createdAt;
 
-  // Opcional: para expandir los datos del remitente
   final RecordModel? senderRecord;
 
   Message({

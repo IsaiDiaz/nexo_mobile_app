@@ -1,5 +1,3 @@
-// lib/presentation/views/professional/schedule_management_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/schedule_controller.dart';
@@ -41,14 +39,6 @@ class _ScheduleManagementViewState
     'sunday': 'Domingo',
   };
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     ref.read(scheduleControllerProvider.notifier).loadSchedules();
-  //   });
-  // }
-
   Future<void> _addSchedule() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedDay == null || _startTime == null || _endTime == null) {
@@ -60,7 +50,6 @@ class _ScheduleManagementViewState
         return;
       }
 
-      // Convertir TimeOfDay a DateTime para el modelo
       final now = DateTime.now();
       final startDateTime = DateTime(
         now.year,
@@ -102,7 +91,6 @@ class _ScheduleManagementViewState
           context,
         ).showSnackBar(SnackBar(content: Text(errorMessage)));
       } else {
-        // Limpiar el formulario después de agregar
         setState(() {
           _selectedDay = null;
           _startTime = null;
@@ -114,10 +102,6 @@ class _ScheduleManagementViewState
   }
 
   Future<void> _editSchedule(AvailableSchedule schedule) async {
-    // Implementar la lógica para editar un horario
-    // Esto podría abrir un diálogo similar al de agregar, pero pre-llenado
-    // y llamaría a updateSchedule en el controlador.
-    // Por simplicidad, aquí solo un placeholder
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Editar horario para: ${schedule.id}')),
     );
@@ -182,7 +166,6 @@ class _ScheduleManagementViewState
     return professionalProfileAsync.when(
       data: (professionalProfile) {
         if (professionalProfile == null) {
-          // Esto puede suceder si el usuario es solo cliente o si el perfil profesional no se creó
           return Center(
             child: Text(
               'No tienes un perfil profesional configurado. Por favor, completa tu perfil profesional para gestionar horarios.',
@@ -193,7 +176,7 @@ class _ScheduleManagementViewState
             ),
           );
         }
-        // Si tenemos el perfil, mostramos el contenido normal
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -385,7 +368,7 @@ class _ScheduleManagementViewState
                         final dayName = entry.key;
                         final schedules = entry.value;
                         if (schedules.isEmpty) {
-                          return const SizedBox.shrink(); // No mostrar si no hay horarios para este día
+                          return const SizedBox.shrink();
                         }
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -422,10 +405,6 @@ class _ScheduleManagementViewState
                                         ),
                                         Row(
                                           children: [
-                                            // IconButton(
-                                            //   icon: Icon(Icons.edit, color: secondaryTextColor),
-                                            //   onPressed: () => _editSchedule(schedule),
-                                            // ),
                                             IconButton(
                                               icon: Icon(
                                                 Icons.delete,

@@ -1,11 +1,8 @@
-// lib/presentation/pages/registration/professional_profile_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/registration_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 
-// Categorías hardcodeadas por ahora, podrían venir de un backend en el futuro
 const List<String> professionalCategories = [
   'Salud',
   'Legal',
@@ -39,7 +36,7 @@ class _ProfessionalProfilePageState
   @override
   void initState() {
     super.initState();
-    // Precargar datos si ya existen en el controlador
+
     final registrationData = ref
         .read(registrationControllerProvider)
         .registrationData;
@@ -96,12 +93,10 @@ class _ProfessionalProfilePageState
           );
 
       if (errorMessage != null) {
-        // Mostrar SnackBar si hay error al finalizar el registro
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(errorMessage)));
       }
-      // La redirección a HomePage se hará automáticamente por app.dart
     }
   }
 
@@ -260,7 +255,6 @@ class _ProfessionalProfilePageState
                       ),
                     ),
                   ),
-                  // No validator, ya que es opcional
                 ),
                 const SizedBox(height: 20),
 
@@ -356,11 +350,8 @@ class _ProfessionalProfilePageState
                       ),
                     ),
                   ),
-                  style: TextStyle(
-                    color: primaryTextColor,
-                  ), // Estilo del texto seleccionado
-                  dropdownColor:
-                      cardAndInputFieldsColor, // Color del menú desplegable
+                  style: TextStyle(color: primaryTextColor),
+                  dropdownColor: cardAndInputFieldsColor,
                   items: professionalCategories.map((String category) {
                     return DropdownMenuItem<String>(
                       value: category,

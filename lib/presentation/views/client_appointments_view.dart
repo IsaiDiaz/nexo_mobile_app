@@ -1,10 +1,8 @@
-// lib/presentation/views/client_appointments_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:nexo/application/appointment_controller.dart';
-import 'package:nexo/application/auth_controller.dart'; // Needed for currentUserRecordProvider
+import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/widgets/appointment_card.dart';
@@ -56,14 +54,13 @@ class ClientAppointmentsView extends ConsumerWidget {
       );
     }
 
-    // Use specific client appointment providers
     final upcomingAppointments = ref.watch(clientUpcomingAppointmentsProvider);
     final completedAppointments = ref.watch(
       clientCompletedAppointmentsProvider,
     );
 
     return DefaultTabController(
-      length: 2, // Próximas/Pendientes y Historial
+      length: 2,
       child: Column(
         children: [
           TabBar(
@@ -128,12 +125,7 @@ class ClientAppointmentsView extends ConsumerWidget {
       itemCount: appointments.length,
       itemBuilder: (context, index) {
         final appointment = appointments[index];
-        return AppointmentCard(
-          appointment: appointment,
-          // You can pass callbacks here for actions like cancel/reschedule
-          // onCancel: () { /* Handle cancellation */ },
-          // onReschedule: () { /* Handle rescheduling */ },
-        );
+        return AppointmentCard(appointment: appointment);
       },
     );
   }

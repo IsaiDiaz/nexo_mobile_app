@@ -1,5 +1,3 @@
-// lib/presentation/pages/registration/person_details_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/registration_controller.dart';
@@ -20,7 +18,6 @@ class PersonDetailsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final registrationState = ref.watch(registrationControllerProvider);
 
-    // Precargar datos si ya existen en el controlador
     _firstNameController.text =
         registrationState.registrationData.firstName ?? '';
     _lastNameController.text =
@@ -59,22 +56,19 @@ class PersonDetailsPage extends ConsumerWidget {
               lastName: _lastNameController.text,
               phoneNumber: _phoneNumberController.text.isNotEmpty
                   ? _phoneNumberController.text
-                  : null, // Opcional para clientes
+                  : null,
               identificationNumber: _identificationNumberController.text,
             );
 
-        // Si es cliente, finalizar el registro aquí
         if (isClient) {
           final errorMessage = await ref
               .read(registrationControllerProvider.notifier)
               .finalizeClientRegistration();
           if (errorMessage != null) {
-            // Mostrar SnackBar si hay error al finalizar el registro del cliente
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(errorMessage)));
           }
-          // La redirección a HomePage se hará automáticamente por app.dart
         }
       }
     }
@@ -182,7 +176,7 @@ class PersonDetailsPage extends ConsumerWidget {
                     if (!isClient && (value == null || value.isEmpty)) {
                       return 'Por favor, introduce tu número de teléfono';
                     }
-                    // Puedes añadir validación de formato de número aquí
+
                     return null;
                   },
                 ),

@@ -1,4 +1,3 @@
-// lib/presentation/pages/detail_page.dart
 import 'package:flutter/material.dart';
 
 class DetailPage extends StatelessWidget {
@@ -6,8 +5,6 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Recuperar los argumentos pasados durante la navegación
-    // Asegúrate de que los argumentos sean un mapa, o ajusta el tipo según lo que pases
     final Map<String, dynamic>? args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
@@ -31,7 +28,6 @@ class DetailPage extends StatelessWidget {
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                // Volver a la pantalla anterior
                 Navigator.pop(context);
               },
               child: const Text('Volver'),

@@ -6,7 +6,7 @@ import 'package:nexo/model/message.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
-import 'package:nexo/presentation/theme/app_colors.dart'; // ¡Añade esta importación!
+import 'package:nexo/presentation/theme/app_colors.dart';
 
 class ChatDetailView extends ConsumerStatefulWidget {
   final Chat chat;
@@ -20,8 +20,7 @@ class ChatDetailView extends ConsumerStatefulWidget {
 class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  pb.RecordModel?
-  _otherUserRecord; // Para almacenar el record del otro participante
+  pb.RecordModel? _otherUserRecord;
 
   @override
   void initState() {
@@ -37,19 +36,15 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
       _loadOtherUserRecord();
     });
 
-    // Scroll al final cuando se carguen los mensajes o se añadan nuevos
-    // Usamos addPostFrameCallback para asegurar que el ListView esté renderizado.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return; // Segunda verificación por si acaso.
+      if (!mounted) return;
 
       if (_scrollController.hasClients) {
-        // Verificación importante
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
   }
 
-  // Nuevo método para cargar el RecordModel del otro participante
   Future<void> _loadOtherUserRecord() async {
     final currentUser = ref.read(currentUserRecordProvider);
     if (currentUser == null) return;
@@ -58,7 +53,6 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
       currentUser.id,
     );
 
-    // Intentar usar los records expandidos si están presentes
     pb.RecordModel? foundOtherUser;
     if (widget.chat.firstUserRecord?.id == otherParticipantId) {
       foundOtherUser = widget.chat.firstUserRecord;
@@ -66,11 +60,8 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
       foundOtherUser = widget.chat.secondUserRecord;
     }
 
-    // Si no se encontró el record expandido, o si fue null, intentar obtenerlo del repositorio
     if (foundOtherUser == null) {
       try {
-        // Asumiendo que AuthRepository tiene un método para obtener un RecordModel de 'users' por ID
-        // Si no tienes este método, necesitas agregarlo a AuthRepository
         foundOtherUser = await ref
             .read(authRepositoryProvider)
             .getUserById(otherParticipantId);
@@ -79,8 +70,6 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
       }
     }
 
-    // Actualizar el estado de la UI si el record se encontró
-    // Solo si el widget todavía está montado
     if (mounted &&
         foundOtherUser != null &&
         _otherUserRecord?.id != foundOtherUser.id) {
@@ -92,22 +81,13 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
 
   @override
   void dispose() {
-    // 1. Limpiar el currentSelectedChatProvider PRIMERO.
-    // Esto es crítico para Riverpod: modifica el estado de un provider externo
-    // antes de que `ref` se considere inválido por completo.
     ref.read(currentSelectedChatProvider.notifier).state = null;
-
-    // 2. Cancelar la suscripción de mensajes del ChatController.
-    // Llama a esto DESPUÉS de limpiar el chat seleccionado,
-    // y antes de que el widget se desmonte completamente.
-    // Esto previene que el ChatController intente notificar a un widget "defunct".
-    // Aunque ref.read se usa aquí, suele ser menos problemático que la línea de arriba.
     ref.read(chatControllerProvider.notifier).unsubscribeFromMessages();
 
     _messageController.dispose();
     _scrollController.dispose();
 
-    super.dispose(); // super.dispose() siempre al final
+    super.dispose();
   }
 
   Future<void> _loadChatMessages() async {
@@ -145,8 +125,6 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
     if (message.senderId == currentUser.id) {
       return 'Tú';
     } else {
-      // Usar el nombre del RecordModel del sender si está expandido, si no, usar _otherUserRecord
-      // PRIORIDAD: message.senderRecord (expandido en el mensaje) > _otherUserRecord (expandido en el chat)
       return message.senderRecord?.get<String>('name') ??
           _otherUserRecord?.get<String>('name') ??
           'Desconocido';
@@ -156,21 +134,17 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
   String? _getSenderAvatarUrl(Message message, pb.RecordModel currentUser) {
     final pocketBase = ref.read(authRepositoryProvider).pocketBase;
 
-    // Obtener el RecordModel del remitente directamente del mensaje si está expandido
     pb.RecordModel? senderUserRecord = message.senderRecord;
 
-    // Si no está expandido en el mensaje, y es el otro usuario, usar _otherUserRecord
     if (senderUserRecord == null && message.senderId != currentUser.id) {
       senderUserRecord = _otherUserRecord;
     }
 
-    // Si es el usuario actual, usar currentUser
     if (message.senderId == currentUser.id) {
       senderUserRecord = currentUser;
     }
 
     if (senderUserRecord != null) {
-      // Usar get<String?> para acceder al campo 'avatar'
       final avatar = senderUserRecord.get<String?>('avatar');
       if (avatar != null && avatar.isNotEmpty) {
         return pocketBase.files.getURL(senderUserRecord, avatar).toString();
@@ -190,11 +164,8 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
       return const Center(child: Text('Error: Usuario no autenticado.'));
     }
 
-    // Asegurarse de que _otherUserRecord esté cargado antes de usarlo en el título
     final otherUserName = _otherUserRecord?.get<String>('name') ?? 'Chat';
-    final colorScheme = Theme.of(
-      context,
-    ).colorScheme; // <-- Obtener colorScheme aquí
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -228,19 +199,12 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                       currentUser,
                     );
                     final bubbleColor = isMe
-                        ? Color(
-                            0xFF0D2B3E,
-                          ) // Fondo para tus mensajes (se mapea a LightAppColors.primaryBackground en claro, DarkAppColors.primaryBackground en oscuro)
-                        : colorScheme.secondary.withOpacity(
-                            0.8,
-                          ); // Fondo para mensajes del otro (se mapea a Light/DarkAppColors.accentButton)
+                        ? Color(0xFF0D2B3E)
+                        : colorScheme.secondary.withOpacity(0.8);
 
                     final textColor = isMe
-                        ? Color(
-                            0xFFFFFFFF,
-                          ) // Texto sobre el color primary de la burbuja
-                        : colorScheme
-                              .onSecondary; // Texto sobre el color secondary de la burbuja
+                        ? Color(0xFFFFFFFF)
+                        : colorScheme.onSecondary;
 
                     final secondaryTextColor = textColor.withOpacity(0.7);
 
@@ -255,8 +219,7 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                         ),
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color:
-                              bubbleColor, // Asumo que secondary es el color de las burbujas de "otros" (tu dorado/naranja)
+                          color: bubbleColor,
                           borderRadius: BorderRadius.only(
                             topLeft: const Radius.circular(12),
                             topRight: const Radius.circular(12),
@@ -287,7 +250,7 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                                             senderName.isNotEmpty
                                                 ? senderName[0].toUpperCase()
                                                 : '?',
-                                            // Color del texto del avatar si no hay imagen: NEGRO si la burbuja es clara, BLANCO si es oscura
+
                                             style: TextStyle(
                                               fontSize: 10,
                                               color: Colors.black,
@@ -303,7 +266,7 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          // Color del nombre del remitente: NEGRO si la burbuja es clara, BLANCO si es oscura
+
                                           color: secondaryTextColor,
                                         ),
                                     overflow: TextOverflow.ellipsis,
@@ -321,7 +284,7 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                                             senderName.isNotEmpty
                                                 ? senderName[0].toUpperCase()
                                                 : '?',
-                                            // Color del texto del avatar si no hay imagen (si soy yo, mi burbuja es primary, debería ser oscura)
+
                                             style: TextStyle(
                                               fontSize: 10,
                                               color: textColor,
@@ -336,20 +299,16 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                             Text(
                               message.content,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    // Color del contenido del mensaje: NEGRO si la burbuja es clara, BLANCO si es oscura
-                                    color: textColor,
-                                  ),
+                                  ?.copyWith(color: textColor),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${message.createdAt.hour}:${message.createdAt.minute.toString().padLeft(2, '0')}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                // Color de la hora: NEGRO si la burbuja es clara, BLANCO si es oscura
-                                color:
-                                    secondaryTextColor, // Si no, es la oscura de otros
-                                fontSize: 10,
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: secondaryTextColor,
+                                    fontSize: 10,
+                                  ),
                             ),
                           ],
                         ),
@@ -380,8 +339,7 @@ class _ChatDetailViewState extends ConsumerState<ChatDetailView> {
                         horizontal: 16.0,
                       ),
                     ),
-                    onSubmitted: (_) =>
-                        _sendMessage(), // Permite enviar con Enter
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 const SizedBox(width: 8.0),

@@ -1,20 +1,18 @@
-// lib/presentation/widgets/professional_details_sheet.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/model/available_schedule.dart';
 import 'package:nexo/application/appointment_controller.dart';
-import 'package:nexo/application/auth_controller.dart'; // Para obtener el ID del cliente
+import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/data/schedule_repository.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:nexo/application/chat_controller.dart'; // Importar el controlador de chat
-import 'package:nexo/presentation/views/chat_detail_view.dart'; // Importar la vista de detalle del chat
-import 'package:nexo/presentation/pages/home_page.dart'; // Para navegar a la sección de mensajes
+import 'package:nexo/application/chat_controller.dart';
+import 'package:nexo/presentation/views/chat_detail_view.dart';
+import 'package:nexo/presentation/pages/home_page.dart';
 import 'package:nexo/model/registration_data.dart';
 
 final _professionalSchedulesProvider =
@@ -53,12 +51,10 @@ class _ProfessionalDetailsSheetState
     'Clase',
   ];
 
-  // Reutiliza la función del avatar para obtener el avatar del usuario asociado al perfil profesional
   String? _getProfessionalUserAvatarUrl(
     pb.RecordModel professionalProfile,
     WidgetRef ref,
   ) {
-    // Asumimos que 'professionalProfile' tiene un campo 'user' expandido que es el RecordModel del usuario.
     final userRecord = professionalProfile.expand['user']?.first;
     if (userRecord != null) {
       final avatar = userRecord.data['avatar'] as String?;
@@ -101,8 +97,6 @@ class _ProfessionalDetailsSheetState
         ? DarkAppColors.accentButton
         : LightAppColors.accentButton;
 
-    // Obtener el RecordModel del usuario asociado al perfil profesional
-    // Esto asume que tienes 'user' expandido en tu consulta de profesionales
     final pb.RecordModel? professionalUserRecord =
         widget.professionalProfile.expand['user']?.first;
 
@@ -142,7 +136,6 @@ class _ProfessionalDetailsSheetState
       'sunday': 'Domingo',
     };
 
-    // Obtener el avatar del profesional usando la nueva función
     final professionalAvatarUrl = _getProfessionalUserAvatarUrl(
       widget.professionalProfile,
       ref,
@@ -383,17 +376,12 @@ class _ProfessionalDetailsSheetState
                 ),
               ),
               const SizedBox(height: 24),
-              // Aquí va el botón de chat, antes de la sección de solicitar cita
-              // Asegúrate de que el usuario actual es un cliente para mostrar este botón
-              // (o que no sea el mismo profesional intentando chatear consigo mismo)
+
               Consumer(
-                // Usamos Consumer para acceder a activeRoleProvider
                 builder: (context, ref, child) {
                   final activeRole = ref.watch(activeRoleProvider);
                   final currentUser = ref.watch(currentUserRecordProvider);
 
-                  // Solo mostrar el botón de chat si el usuario actual es un cliente
-                  // y no está intentando chatear consigo mismo (si el profesional es el mismo usuario)
                   if (activeRole == UserRole.client &&
                       currentUser != null &&
                       professionalUserRecord?.id != currentUser.id) {
@@ -403,39 +391,29 @@ class _ProfessionalDetailsSheetState
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () async {
-                              Navigator.of(
-                                context,
-                              ).pop(); // Cierra el bottom sheet
+                              Navigator.of(context).pop();
                               final chat = await ref
                                   .read(chatControllerProvider.notifier)
                                   .initiateChatWithProfessional(
                                     professionalUserRecord!.id,
-                                  ); // Usar el ID del usuario del profesional
+                                  );
 
                               if (chat != null && context.mounted) {
-                                // Si el chat se inició o se encontró, navegar a la sección de mensajes
-                                // y luego a la vista de detalle del chat
-                                // Primero navega a la HomePage y asegura que la sección sea 'messages'
                                 final homeNavigator = Navigator.of(
                                   context,
                                   rootNavigator: true,
                                 );
                                 homeNavigator.popUntil(
                                   (route) => route.isFirst,
-                                ); // Asegura que estemos en la raíz de la navegación
-                                ref
-                                    .read(homeSectionProvider.notifier)
-                                    .state = HomeSection
-                                    .messages; // Establece la sección de mensajes
+                                );
+                                ref.read(homeSectionProvider.notifier).state =
+                                    HomeSection.messages;
 
-                                // Espera un pequeño momento para que la UI de HomePage se actualice
                                 await Future.delayed(
                                   const Duration(milliseconds: 100),
                                 );
 
-                                // Luego, empuja la vista de detalle del chat
                                 if (context.mounted) {
-                                  // Verificar de nuevo si el contexto sigue montado
                                   homeNavigator.push(
                                     MaterialPageRoute(
                                       builder: (context) =>
@@ -471,13 +449,11 @@ class _ProfessionalDetailsSheetState
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          height: 20,
-                        ), // Espacio entre el botón de chat y solicitar cita
+                        const SizedBox(height: 20),
                       ],
                     );
                   }
-                  return const SizedBox.shrink(); // No muestra el botón si no es cliente o es el mismo profesional
+                  return const SizedBox.shrink();
                 },
               ),
               Text(
@@ -589,7 +565,6 @@ class _ProfessionalDetailsSheetState
   }
 
   Future<void> _requestAppointment() async {
-    // ... (Tu lógica existente para solicitar cita)
     if (_selectedDate == null ||
         _selectedTime == null ||
         _selectedServiceType == null) {

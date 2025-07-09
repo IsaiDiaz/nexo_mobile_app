@@ -173,7 +173,6 @@ class LoginPage extends ConsumerWidget {
                           ),
                         ),
                         child: const Text(
-                          // Siempre 'Acceder'
                           'Acceder',
                           style: TextStyle(
                             fontSize: 18,

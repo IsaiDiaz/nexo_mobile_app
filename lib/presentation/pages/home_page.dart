@@ -64,36 +64,22 @@ class HomePage extends ConsumerWidget {
         case HomeSection.clientAppointments:
           return const ClientAppointmentsView();
         case HomeSection.professionalAnnouncements:
-          return const Center(
-            child: Text('Anuncios de Profesionales'),
-          ); // TODO: Implementar
+          return const Center(child: Text('Anuncios de Profesionales'));
         case HomeSection.professionalAppointments:
           return ProfessionalAppointmentsView();
         case HomeSection.scheduleManagement:
-          return const Center(
-            child: ScheduleManagementView(),
-          ); // TODO: Implementar
+          return const Center(child: ScheduleManagementView());
         case HomeSection.professionalNotifications:
-          return const Center(
-            child: Text('Notificaciones Profesionales'),
-          ); // TODO: Implementar
+          return const Center(child: Text('Notificaciones Profesionales'));
         case HomeSection.editPersonalInfo:
-          return const Center(
-            child: Text('Editar Información Personal'),
-          ); // TODO: Implementar
+          return const Center(child: Text('Editar Información Personal'));
         case HomeSection.editProfessionalInfo:
-          return const Center(
-            child: Text('Editar Información Profesional'),
-          ); // TODO: Implementar
+          return const Center(child: Text('Editar Información Profesional'));
         case HomeSection.settings:
-          return const Center(
-            child: Text('Configuración General'),
-          ); // TODO: Implementar
+          return const Center(child: Text('Configuración General'));
         case HomeSection.getOtherRole:
-          return const Center(
-            child: Text('Obtener el Otro Rol'),
-          ); // TODO: Implementar
-        case HomeSection.messages: // ¡Nueva vista para mensajes!
+          return const Center(child: Text('Obtener el Otro Rol'));
+        case HomeSection.messages:
           return const MessagesView();
       }
     }
