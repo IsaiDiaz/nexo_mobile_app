@@ -107,6 +107,13 @@ class CustomDrawer extends ConsumerWidget {
             _buildDrawerItem(
               context,
               ref,
+              HomeSection.messages, // Aquí se enlaza con la nueva sección
+              'Mensajes',
+              Icons.message,
+            ),
+            _buildDrawerItem(
+              context,
+              ref,
               HomeSection.professionalAnnouncements,
               'Anuncios',
               Icons.announcement,
@@ -116,8 +123,15 @@ class CustomDrawer extends ConsumerWidget {
               context,
               ref,
               HomeSection.professionalAppointments,
-              'Mis Citas (Profesional)',
+              'Mis Citas',
               Icons.calendar_month,
+            ),
+            _buildDrawerItem(
+              context,
+              ref,
+              HomeSection.messages, // Aquí se enlaza con la nueva sección
+              'Mensajes',
+              Icons.message,
             ),
             _buildDrawerItem(
               context,

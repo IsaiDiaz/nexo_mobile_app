@@ -12,6 +12,10 @@ import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/data/schedule_repository.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:nexo/application/chat_controller.dart'; // Importar el controlador de chat
+import 'package:nexo/presentation/views/chat_detail_view.dart'; // Importar la vista de detalle del chat
+import 'package:nexo/presentation/pages/home_page.dart'; // Para navegar a la sección de mensajes
+import 'package:nexo/model/registration_data.dart';
 
 final _professionalSchedulesProvider =
     FutureProvider.family<List<AvailableSchedule>, String>((
@@ -40,28 +44,26 @@ class _ProfessionalDetailsSheetState
     extends ConsumerState<ProfessionalDetailsSheet> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  String?
-  _selectedServiceType; // Renombrado a _selectedServiceType para reflejar 'type' en DB
+  String? _selectedServiceType;
 
-  // CORRECCIÓN: Los tipos de servicio (select en 'appointment.type')
-  // Estos deberían ser los valores válidos para el campo 'type' de tu colección 'appointment'.
-  // Si los servicios dependen de la 'category' del profesional, tendrías que cargarlos dinámicamente.
-  // Por ahora, usamos ejemplos que podrían ser válidos para 'type'.
   final List<String> _appointmentTypes = [
     'Consulta',
     'Sesión',
     'Asesoría',
     'Clase',
-  ]; // Valores de ejemplo para 'type'
+  ];
 
-  String? _getAvatarUrl(pb.RecordModel professionalProfile, WidgetRef ref) {
-    final userRecord = professionalProfile.get<pb.RecordModel?>('expand.user');
+  // Reutiliza la función del avatar para obtener el avatar del usuario asociado al perfil profesional
+  String? _getProfessionalUserAvatarUrl(
+    pb.RecordModel professionalProfile,
+    WidgetRef ref,
+  ) {
+    // Asumimos que 'professionalProfile' tiene un campo 'user' expandido que es el RecordModel del usuario.
+    final userRecord = professionalProfile.expand['user']?.first;
     if (userRecord != null) {
-      final avatar = userRecord.get<String?>('avatar');
+      final avatar = userRecord.data['avatar'] as String?;
       if (avatar != null && avatar.isNotEmpty) {
-        // Obtener la instancia de PocketBase del authRepositoryProvider
         final pocketBase = ref.read(authRepositoryProvider).pocketBase;
-        // Usar pocketBase.files.getURL para construir la URL
         return pocketBase.files.getURL(userRecord, avatar).toString();
       }
     }
@@ -75,7 +77,6 @@ class _ProfessionalDetailsSheetState
         coordinateData.containsKey('lon')) {
       final lat = coordinateData['lat'];
       final lon = coordinateData['lon'];
-      // PocketBase almacena lat y lon como doubles.
       if (lat is double && lon is double) {
         return LatLng(lat, lon);
       }
@@ -100,24 +101,23 @@ class _ProfessionalDetailsSheetState
         ? DarkAppColors.accentButton
         : LightAppColors.accentButton;
 
-    final userRecord = widget.professionalProfile.get<pb.RecordModel?>(
-      'expand.user',
-    );
+    // Obtener el RecordModel del usuario asociado al perfil profesional
+    // Esto asume que tienes 'user' expandido en tu consulta de profesionales
+    final pb.RecordModel? professionalUserRecord =
+        widget.professionalProfile.expand['user']?.first;
 
     final professionalName =
-        userRecord?.get<String>('name') ?? 'Nombre Desconocido'; //
+        professionalUserRecord?.data['name'] as String? ?? 'Nombre Desconocido';
     final professionalDescription =
-        widget.professionalProfile.get<String?>('description') ??
-        'No hay descripción.'; // Campo 'description'
+        widget.professionalProfile.data['description'] as String? ??
+        'No hay descripción.';
     final professionalLocation =
-        widget.professionalProfile.get<String?>('address') ??
+        widget.professionalProfile.data['address'] as String? ??
         'Ubicación no especificada.';
 
     final LatLng? professionalCoordinates = _getCoordinates(
       widget.professionalProfile,
     );
-
-    print('DEBUG: professionalCoordinates: $professionalCoordinates');
 
     final schedulesAsyncValue = ref.watch(
       _professionalSchedulesProvider(widget.professionalProfile.id),
@@ -141,6 +141,12 @@ class _ProfessionalDetailsSheetState
       'saturday': 'Sábado',
       'sunday': 'Domingo',
     };
+
+    // Obtener el avatar del profesional usando la nueva función
+    final professionalAvatarUrl = _getProfessionalUserAvatarUrl(
+      widget.professionalProfile,
+      ref,
+    );
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -168,49 +174,87 @@ class _ProfessionalDetailsSheetState
                 ),
               ),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: theme.colorScheme.primary,
+                    backgroundImage: professionalAvatarUrl != null
+                        ? NetworkImage(professionalAvatarUrl)
+                        : null,
+                    child: professionalAvatarUrl == null
+                        ? Text(
+                            professionalName.isNotEmpty
+                                ? professionalName[0].toUpperCase()
+                                : 'P',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          professionalName,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: primaryTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          widget.professionalProfile.data['business_name']
+                                  as String? ??
+                              'Negocio Desconocido',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                        Text(
+                          widget.professionalProfile.data['category']
+                                  as String? ??
+                              'Sin Categoría',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               Text(
-                professionalName,
-                style: theme.textTheme.headlineLarge?.copyWith(
+                'Descripción:',
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: primaryTextColor,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 professionalDescription,
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: secondaryTextColor,
                 ),
-                textAlign: TextAlign.center,
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: theme.colorScheme.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      // Usar Flexible para que el texto no se desborde
-                      child: Text(
-                        professionalLocation,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: secondaryTextColor,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines:
-                            2, // Limitar a dos líneas para evitar desbordamiento
-                        overflow: TextOverflow
-                            .ellipsis, // Añadir puntos suspensivos si excede
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.location_on, color: secondaryTextColor, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      professionalLocation,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: secondaryTextColor,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               if (professionalCoordinates != null) ...[
@@ -223,7 +267,7 @@ class _ProfessionalDetailsSheetState
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  height: 200, // Altura fija para el mapa
+                  height: 200,
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: secondaryTextColor.withOpacity(0.3),
@@ -231,13 +275,11 @@ class _ProfessionalDetailsSheetState
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
-                    // Para que el mapa se ajuste al borde redondeado
                     borderRadius: BorderRadius.circular(12),
                     child: FlutterMap(
                       options: MapOptions(
                         initialCenter: professionalCoordinates,
-                        initialZoom: 15.0, // Un buen zoom para ver el punto
-                        // Evita que el mapa se mueva para que solo sea una visualización
+                        initialZoom: 15.0,
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.none,
                         ),
@@ -246,8 +288,7 @@ class _ProfessionalDetailsSheetState
                         TileLayer(
                           urlTemplate:
                               'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName:
-                              'com.example.nexo', // Reemplaza con el nombre de tu paquete
+                          userAgentPackageName: 'com.example.nexo',
                         ),
                         MarkerLayer(
                           markers: [
@@ -342,6 +383,103 @@ class _ProfessionalDetailsSheetState
                 ),
               ),
               const SizedBox(height: 24),
+              // Aquí va el botón de chat, antes de la sección de solicitar cita
+              // Asegúrate de que el usuario actual es un cliente para mostrar este botón
+              // (o que no sea el mismo profesional intentando chatear consigo mismo)
+              Consumer(
+                // Usamos Consumer para acceder a activeRoleProvider
+                builder: (context, ref, child) {
+                  final activeRole = ref.watch(activeRoleProvider);
+                  final currentUser = ref.watch(currentUserRecordProvider);
+
+                  // Solo mostrar el botón de chat si el usuario actual es un cliente
+                  // y no está intentando chatear consigo mismo (si el profesional es el mismo usuario)
+                  if (activeRole == UserRole.client &&
+                      currentUser != null &&
+                      professionalUserRecord?.id != currentUser.id) {
+                    return Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              Navigator.of(
+                                context,
+                              ).pop(); // Cierra el bottom sheet
+                              final chat = await ref
+                                  .read(chatControllerProvider.notifier)
+                                  .initiateChatWithProfessional(
+                                    professionalUserRecord!.id,
+                                  ); // Usar el ID del usuario del profesional
+
+                              if (chat != null && context.mounted) {
+                                // Si el chat se inició o se encontró, navegar a la sección de mensajes
+                                // y luego a la vista de detalle del chat
+                                // Primero navega a la HomePage y asegura que la sección sea 'messages'
+                                final homeNavigator = Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                );
+                                homeNavigator.popUntil(
+                                  (route) => route.isFirst,
+                                ); // Asegura que estemos en la raíz de la navegación
+                                ref
+                                    .read(homeSectionProvider.notifier)
+                                    .state = HomeSection
+                                    .messages; // Establece la sección de mensajes
+
+                                // Espera un pequeño momento para que la UI de HomePage se actualice
+                                await Future.delayed(
+                                  const Duration(milliseconds: 100),
+                                );
+
+                                // Luego, empuja la vista de detalle del chat
+                                if (context.mounted) {
+                                  // Verificar de nuevo si el contexto sigue montado
+                                  homeNavigator.push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ChatDetailView(chat: chat),
+                                    ),
+                                  );
+                                }
+                              } else if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      ref
+                                              .read(chatControllerProvider)
+                                              .errorMessage ??
+                                          'No se pudo iniciar el chat.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.message),
+                            label: const Text('Enviar Mensaje'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              backgroundColor: theme.colorScheme.secondary,
+                              foregroundColor: Colors.white,
+                              textStyle: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ), // Espacio entre el botón de chat y solicitar cita
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink(); // No muestra el botón si no es cliente o es el mismo profesional
+                },
+              ),
               Text(
                 'Solicitar Cita',
                 style: theme.textTheme.titleLarge?.copyWith(
@@ -451,6 +589,7 @@ class _ProfessionalDetailsSheetState
   }
 
   Future<void> _requestAppointment() async {
+    // ... (Tu lógica existente para solicitar cita)
     if (_selectedDate == null ||
         _selectedTime == null ||
         _selectedServiceType == null) {

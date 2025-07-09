@@ -144,6 +144,22 @@ class AuthRepository {
     }
   }
 
+  Future<pb.RecordModel?> getUserById(String userId) async {
+    try {
+      final record = await _pb.collection('users').getOne(userId);
+      return record;
+    } on pb.ClientException catch (e) {
+      if (e.statusCode == 404) {
+        print('Usuario con ID $userId no encontrado.');
+        return null;
+      }
+      rethrow;
+    } catch (e) {
+      print('Error al obtener usuario por ID: $e');
+      return null;
+    }
+  }
+
   Future<pb.RecordModel?> getPersonProfile(String userId) async {
     try {
       final result = await _pb

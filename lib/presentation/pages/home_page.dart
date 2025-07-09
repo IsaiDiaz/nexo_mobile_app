@@ -8,6 +8,7 @@ import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
+import 'package:nexo/presentation/views/messages_view.dart';
 
 enum HomeSection {
   searchProfessionals,
@@ -20,6 +21,7 @@ enum HomeSection {
   editProfessionalInfo,
   settings,
   getOtherRole,
+  messages,
 }
 
 final homeSectionProvider = StateProvider<HomeSection>((ref) {
@@ -54,11 +56,6 @@ class HomePage extends ConsumerWidget {
     }
 
     String appBarTitle = 'Nexo';
-    if (activeRole == UserRole.client) {
-      appBarTitle = 'Nexo (Cliente)';
-    } else if (activeRole == UserRole.professional) {
-      appBarTitle = 'Nexo (Profesional)';
-    }
 
     Widget _buildBody(HomeSection section) {
       switch (section) {
@@ -96,6 +93,8 @@ class HomePage extends ConsumerWidget {
           return const Center(
             child: Text('Obtener el Otro Rol'),
           ); // TODO: Implementar
+        case HomeSection.messages: // ¡Nueva vista para mensajes!
+          return const MessagesView();
       }
     }
 
