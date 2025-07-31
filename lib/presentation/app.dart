@@ -37,6 +37,7 @@ class App extends ConsumerWidget {
     }
 
     //comentario para probar github actions
+    //modificacion para github actions completo
     Widget currentScreen;
     if (isAuthenticated) {
       currentScreen = const HomePage();
