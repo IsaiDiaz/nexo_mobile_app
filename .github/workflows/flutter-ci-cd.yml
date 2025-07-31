@@ -14,6 +14,13 @@ jobs:
     environment: testing
 
     steps:
+    - name: 🏷️ Crear tag dinámico (si no existe)
+      run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag testing-build-${{ github.run_number }}
+          git push origin testing-build-${{ github.run_number }}
+          
     - name: Checkout del codigo
       uses: actions/checkout@v3
 
@@ -38,7 +45,7 @@ jobs:
     - name: Crear Release en Github
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ github.run_number }}
+        name: Release testing-build-${{ github.run_number }}
         tag_name: testing-build-${{ github.run_number }}
         body: |
           Versión de testing compilada desde develop
