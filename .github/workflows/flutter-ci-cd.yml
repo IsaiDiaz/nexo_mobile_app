@@ -50,7 +50,7 @@ jobs:
       run: |
         TAG=testing-build-${{ github.run_number }}
         git tag $TAG
-        git remote add authenticated-origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+        git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
         git push origin $TAG
         
     - name: Crear Release y subir APK
