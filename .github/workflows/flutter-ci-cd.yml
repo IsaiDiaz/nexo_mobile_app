@@ -33,7 +33,7 @@ jobs:
       run: flutter test
 
     - name: Compular APK en modo release
-      run: flutter build apl --release
+      run: flutter build apk --release
 
     - name: Crear Release en Github
       uses: softprops/action-gh-release@v1
