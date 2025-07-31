@@ -50,8 +50,9 @@ jobs:
       run: |
         TAG=testing-build-${{ github.run_number }}
         git tag $TAG
-        git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} $TAG
-
+        git remote add authenticated-origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+        git push authenticated-origin $TAG
+        
     - name: Crear Release y subir APK
       uses: softprops/action-gh-release@v1
       with:
