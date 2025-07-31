@@ -1,14 +1,34 @@
-name: Flutter CI/CD
+name: Flutter CI/CD testing
 
 on:
   push:
+    branches: 
+     - develop
     tags:
       - 'v*.*.*'
+
+env:
+  FLUTTER_ENV_FILE: .env
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: testing
 
     steps:
     - name: Checkout del codigo
       uses: actions/checkout@v3
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.2'
+
+    - name: Instalar dependencias
+      run: flutter pub get
+
+    - name: Crear archivo .env con URL del entorno
+      run: |
+        echo "POCKETBASE_URL=${{ vars.POCKETBASE_URL }}" > .env
+
+    
