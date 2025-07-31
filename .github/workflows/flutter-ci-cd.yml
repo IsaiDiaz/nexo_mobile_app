@@ -4,8 +4,6 @@ on:
   push:
     branches: 
      - develop
-    tags:
-      - 'v*.*.*'
 
 env:
   FLUTTER_ENV_FILE: .env
