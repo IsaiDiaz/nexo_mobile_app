@@ -3,7 +3,9 @@ name: Flutter CI/CD testing
 on:
   push:
     branches: 
-     - develop
+      - develop
+    tags:
+      - 'v*.*.*'
 
 env:
   FLUTTER_ENV_FILE: .env
@@ -16,13 +18,6 @@ jobs:
     steps:
     - name: Checkout del codigo
       uses: actions/checkout@v3
-
-    - name: 🏷️ Crear tag dinámico
-      run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git tag testing-build-${{ github.run_number }}
-          git push origin testing-build-${{ github.run_number }}
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
