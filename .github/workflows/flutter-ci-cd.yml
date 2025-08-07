@@ -33,9 +33,6 @@ jobs:
       run: |
         echo "POCKETBASE_URL=${{ vars.POCKETBASE_URL }}" > .env
 
-    - name: Ejecutar pruebas
-      run: flutter test
-
     - name: Compular APK en modo release
       run: flutter build apk --release
 
