@@ -10,6 +10,8 @@ import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
 import 'package:nexo/presentation/views/messages_view.dart';
 
+//Comentario para probar ci/cd y evidencia de ejecuciones automaticas
+
 enum HomeSection {
   searchProfessionals,
   clientAppointments,
