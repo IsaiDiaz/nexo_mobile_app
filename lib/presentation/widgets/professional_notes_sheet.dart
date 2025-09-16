@@ -250,13 +250,13 @@ class _ProfessionalNotesSheetState
                 children: [
                   IconButton(
                     icon: const Icon(Icons.camera_alt),
-                    color: theme.colorScheme.primary,
+                    color: primaryTextColor,
                     onPressed: () => _pickImage(ImageSource.camera),
                     tooltip: 'Tomar Foto',
                   ),
                   IconButton(
                     icon: const Icon(Icons.photo_library),
-                    color: theme.colorScheme.primary,
+                    color: primaryTextColor,
                     onPressed: () => _pickImage(ImageSource.gallery),
                     tooltip: 'Seleccionar de Galería',
                   ),
@@ -266,7 +266,7 @@ class _ProfessionalNotesSheetState
                     label: const Text('Guardar Nota'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.secondary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: primaryTextColor,
                     ),
                   ),
                 ],

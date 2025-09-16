@@ -117,7 +117,7 @@ class ProfessionalCard extends ConsumerWidget {
                   Text(
                     '\$${hourlyRate.toStringAsFixed(2)}/hr',
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.primary,
+                      color: primaryTextColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
