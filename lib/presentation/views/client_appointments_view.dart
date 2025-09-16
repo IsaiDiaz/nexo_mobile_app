@@ -66,7 +66,7 @@ class ClientAppointmentsView extends ConsumerWidget {
           TabBar(
             labelColor: primaryTextColor,
             unselectedLabelColor: secondaryTextColor,
-            indicatorColor: theme.colorScheme.primary,
+            indicatorColor: primaryTextColor,
             tabs: const [
               Tab(text: 'Próximas'),
               Tab(text: 'Historial'),

@@ -161,7 +161,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green[700],
-                                foregroundColor: Colors.white,
+                                foregroundColor: primaryTextColor,
                               ),
                               child: const Text('Confirmar'),
                             ),
@@ -175,7 +175,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red[700],
-                                foregroundColor: Colors.white,
+                                foregroundColor: primaryTextColor,
                               ),
                               child: const Text('Rechazar'),
                             ),
@@ -190,7 +190,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange[700],
-                                foregroundColor: Colors.white,
+                                foregroundColor: primaryTextColor,
                               ),
                               child: const Text('Cancelar'),
                             ),
@@ -208,7 +208,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                               label: const Text('Notas'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.colorScheme.primary,
-                                foregroundColor: Colors.white,
+                                foregroundColor: primaryTextColor,
                               ),
                             ),
                           ],
@@ -221,7 +221,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red[700],
-                                foregroundColor: Colors.white,
+                                foregroundColor: primaryTextColor,
                               ),
                               child: const Text('Eliminar'),
                             ),

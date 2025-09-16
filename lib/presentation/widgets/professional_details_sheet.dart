@@ -480,6 +480,20 @@ class _ProfessionalDetailsSheetState
                     initialDate: DateTime.now(),
                     firstDate: DateTime.now(),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
+                    builder: (context, child) => Theme(
+                      data: theme.copyWith(
+                        colorScheme: theme.colorScheme.copyWith(
+                          primary: theme.colorScheme.primary,
+                          surface: cardColor,
+                        ),
+                        textButtonTheme: TextButtonThemeData(
+                          style: TextButton.styleFrom(
+                            foregroundColor: primaryTextColor,
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    ),
                   );
                   if (pickedDate != null) {
                     setState(() {
@@ -502,6 +516,20 @@ class _ProfessionalDetailsSheetState
                   final TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
                     initialTime: TimeOfDay.now(),
+                    builder: (context, child) => Theme(
+                      data: theme.copyWith(
+                        colorScheme: theme.colorScheme.copyWith(
+                          primary: theme.colorScheme.primary,
+                          surface: cardColor,
+                        ),
+                        textButtonTheme: TextButtonThemeData(
+                          style: TextButton.styleFrom(
+                            foregroundColor: primaryTextColor,
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    ),
                   );
                   if (pickedTime != null) {
                     setState(() {

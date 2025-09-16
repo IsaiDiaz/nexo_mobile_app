@@ -252,6 +252,24 @@ class _ScheduleManagementViewState
                               final TimeOfDay? picked = await showTimePicker(
                                 context: context,
                                 initialTime: _startTime ?? TimeOfDay.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: accentButtonColor,
+                                        secondary: accentButtonColor,
+                                        onPrimary: Colors.black,
+                                        onSurface: primaryTextColor,
+                                      ),
+                                      textButtonTheme: TextButtonThemeData(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: primaryTextColor,
+                                        ),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
                               if (picked != null && picked != _startTime) {
                                 setState(() {
@@ -293,6 +311,24 @@ class _ScheduleManagementViewState
                               final TimeOfDay? picked = await showTimePicker(
                                 context: context,
                                 initialTime: _endTime ?? TimeOfDay.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: accentButtonColor,
+                                        secondary: accentButtonColor,
+                                        onPrimary: Colors.black,
+                                        onSurface: primaryTextColor,
+                                      ),
+                                      textButtonTheme: TextButtonThemeData(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: primaryTextColor,
+                                        ),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
                               );
                               if (picked != null && picked != _endTime) {
                                 setState(() {

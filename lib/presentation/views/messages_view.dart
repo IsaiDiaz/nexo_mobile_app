@@ -118,14 +118,14 @@ class MessagesView extends ConsumerWidget {
                           : LightAppColors.primaryText,
                     ),
                   ),
-                  subtitle: Text(
-                    'Chat ID: ${chat.id}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? DarkAppColors.secondaryText
-                          : LightAppColors.secondaryText,
-                    ),
-                  ),
+                  // subtitle: Text(
+                  //   'Chat ID: ${chat.id}',
+                  //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  //     color: Theme.of(context).brightness == Brightness.dark
+                  //         ? DarkAppColors.secondaryText
+                  //         : LightAppColors.secondaryText,
+                  //   ),
+                  // ),
                   onTap: () {
                     ref.read(currentSelectedChatProvider.notifier).state = chat;
                     Navigator.of(context).push(
