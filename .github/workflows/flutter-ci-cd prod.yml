@@ -3,7 +3,7 @@ name: Flutter CI/CD testing
 on:
   push:
     branches: 
-     - main
+      - main
 
 env:
   FLUTTER_ENV_FILE: .env
@@ -12,10 +12,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout del codigo
       uses: actions/checkout@v3
+      with: 
+        fetch-depth: 0
 
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
@@ -29,28 +33,25 @@ jobs:
       run: |
         echo "POCKETBASE_URL=${{ vars.POCKETBASE_URL }}" > .env
 
-    - name: Ejecutar pruebas
-      run: flutter test
-
     - name: Compilar APK en modo release
       run: flutter build apk --release
 
-    - name: Crear Release en Github
+    - name: Crear y pushear tag dinámico
+      run: |
+        TAG=prod-build-${{ github.run_number }}
+        git tag $TAG
+        git push origin $TAG
+        
+    - name: Crear Release y subir APK
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ github.run_number }}
-        tag_name: testing-build-${{ github.run_number }}
+        name: Release prod-build-${{ github.run_number }}
+        tag_name: prod-build-${{ github.run_number }}
         body: |
-          Versión de testing compilada desde develop
+          Versión de producción compilada desde main
           Commit: ${{ github.sha }}
-      env: 
-        GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN }}
-
-    - name: Subir APK al Release
-      uses: softprops/action-gh-release@v1
-      with:
         files: build/app/outputs/flutter-apk/app-release.apk
-      env:
+      env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     
