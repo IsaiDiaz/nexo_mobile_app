@@ -1,0 +1,56 @@
+name: Flutter CI/CD testing
+
+on:
+  push:
+    branches: 
+     - main
+
+env:
+  FLUTTER_ENV_FILE: .env
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout del codigo
+      uses: actions/checkout@v3
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.32.2'
+
+    - name: Instalar dependencias
+      run: flutter pub get
+
+    - name: Crear archivo .env con URL del entorno
+      run: |
+        echo "POCKETBASE_URL=${{ vars.POCKETBASE_URL }}" > .env
+
+    - name: Ejecutar pruebas
+      run: flutter test
+
+    - name: Compular APK en modo release
+      run: flutter build apl --release
+
+    - name: Crear Release en Github
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ github.run_number }}
+        tag_name: testing-build-${{ github.run_number }}
+        body: |
+          Versión de testing compilada desde develop
+          Commit: ${{ github.sha }}
+      env: 
+        GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN }}
+
+    - name: Subir APK al Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/app/outputs/flutter-apk/app-release.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    
