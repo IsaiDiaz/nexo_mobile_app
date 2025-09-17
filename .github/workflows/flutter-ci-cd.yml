@@ -33,7 +33,7 @@ jobs:
       run: |
         echo "POCKETBASE_URL=${{ vars.POCKETBASE_URL }}" > .env
 
-    - name: Compular APK en modo release
+    - name: Compilar APK en modo release
       run: flutter build apk --release
 
     - name: Crear y pushear tag dinámico
