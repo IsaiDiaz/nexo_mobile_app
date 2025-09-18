@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/registration_data.dart';
-import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/views/client_appointments_view.dart';
 import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
@@ -59,7 +58,7 @@ class HomePage extends ConsumerWidget {
 
     String appBarTitle = 'Nexo';
 
-    Widget _buildBody(HomeSection section) {
+    Widget buildBody(HomeSection section) {
       switch (section) {
         case HomeSection.searchProfessionals:
           return const SearchProfessionalsView();
@@ -109,7 +108,7 @@ class HomePage extends ConsumerWidget {
           Navigator.of(context).pop();
         },
       ),
-      body: _buildBody(currentSection),
+      body: buildBody(currentSection),
     );
   }
 }

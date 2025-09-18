@@ -231,7 +231,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                   ),
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 20),
           ],
         );

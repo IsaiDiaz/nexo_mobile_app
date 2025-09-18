@@ -47,7 +47,7 @@ class PersonDetailsPage extends ConsumerWidget {
 
     final isClient = registrationState.registrationData.role == UserRole.client;
 
-    void _submitForm() async {
+    void submitForm() async {
       if (_formKey.currentState!.validate()) {
         ref
             .read(registrationControllerProvider.notifier)
@@ -213,7 +213,7 @@ class PersonDetailsPage extends ConsumerWidget {
                 const SizedBox(height: 30),
 
                 ElevatedButton(
-                  onPressed: registrationState.isLoading ? null : _submitForm,
+                  onPressed: registrationState.isLoading ? null : submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentButtonColor,
                     foregroundColor: Colors.black,

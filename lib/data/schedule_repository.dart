@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nexo/model/available_schedule.dart';
 import 'package:nexo/data/auth_repository.dart';
 

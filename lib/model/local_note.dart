@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class LocalNote {
   final int? id;
   final String appointmentId;

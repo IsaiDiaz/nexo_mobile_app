@@ -38,9 +38,6 @@ class Appointment {
     );
     final clientRecord = record.get<pb.RecordModel?>('expand.client');
 
-    final professionalId = record.data['professional'] as String;
-    final clientId = record.data['client'] as String;
-
     return Appointment(
       id: record.id,
       start: startUtc,

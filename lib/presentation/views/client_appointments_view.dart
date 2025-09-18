@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:nexo/application/appointment_controller.dart';
-import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/widgets/appointment_card.dart';

@@ -46,7 +46,7 @@ class UserRegistrationPage extends ConsumerWidget {
         ? DarkAppColors.primaryBackground
         : LightAppColors.primaryBackground;
 
-    Future<void> _pickImage() async {
+    Future<void> pickImage() async {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
@@ -54,7 +54,7 @@ class UserRegistrationPage extends ConsumerWidget {
       }
     }
 
-    void _submitForm() {
+    void submitForm() {
       if (_formKey.currentState!.validate()) {
         ref
             .read(registrationControllerProvider.notifier)
@@ -87,7 +87,7 @@ class UserRegistrationPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: pickImage,
                   child: CircleAvatar(
                     radius: 60,
                     backgroundColor: cardAndInputFieldsColor,
@@ -210,7 +210,7 @@ class UserRegistrationPage extends ConsumerWidget {
                 const SizedBox(height: 20),
 
                 ElevatedButton(
-                  onPressed: _submitForm,
+                  onPressed: submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentButtonColor,
                     foregroundColor: Colors.black,

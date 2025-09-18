@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/schedule_controller.dart';
-import 'package:nexo/model/available_schedule.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/application/auth_controller.dart';
 
@@ -99,12 +98,6 @@ class _ScheduleManagementViewState
         });
       }
     }
-  }
-
-  Future<void> _editSchedule(AvailableSchedule schedule) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Editar horario para: ${schedule.id}')),
-    );
   }
 
   Future<void> _confirmDeleteSchedule(String scheduleId) async {
@@ -456,7 +449,7 @@ class _ScheduleManagementViewState
                                       ],
                                     ),
                                   );
-                                }).toList(),
+                                }),
                               ],
                             ),
                           ),

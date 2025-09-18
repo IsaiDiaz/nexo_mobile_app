@@ -14,7 +14,7 @@ class MessagesView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatState = ref.watch(chatControllerProvider);
-    final chatController = ref.read(chatControllerProvider.notifier);
+    ref.read(chatControllerProvider.notifier);
     final currentUser = ref.watch(currentUserRecordProvider);
 
     ref.listen<AsyncValue<List<Chat>>>(

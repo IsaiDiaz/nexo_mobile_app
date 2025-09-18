@@ -40,9 +40,6 @@ class AppointmentRepository {
     String newStatus,
   ) async {
     try {
-      final updatedRecord = await _pb
-          .collection('appointment')
-          .update(appointmentId, body: {'status': newStatus});
       final reFetchedRecord = await _pb
           .collection('appointment')
           .getOne(appointmentId, expand: 'client');

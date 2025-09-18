@@ -19,7 +19,7 @@ class App extends ConsumerWidget {
     final isAuthenticated = ref.watch(authStatusProvider);
     final registrationState = ref.watch(registrationControllerProvider);
 
-    Widget _getRegistrationPage(RegistrationStep step) {
+    Widget getRegistrationPage(RegistrationStep step) {
       switch (step) {
         case RegistrationStep.none:
           return const LoginPage();
@@ -36,15 +36,13 @@ class App extends ConsumerWidget {
       }
     }
 
-    //comentario para probar github actions
-    //modificacion para github actions completo
     Widget currentScreen;
     if (isAuthenticated) {
       currentScreen = const HomePage();
     } else {
       if (registrationState.currentStep != RegistrationStep.completed &&
           registrationState.currentStep != RegistrationStep.roleSelection) {
-        currentScreen = _getRegistrationPage(registrationState.currentStep);
+        currentScreen = getRegistrationPage(registrationState.currentStep);
       } else if (registrationState.currentStep ==
           RegistrationStep.roleSelection) {
         currentScreen = const RoleSelectionPage();

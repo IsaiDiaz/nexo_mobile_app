@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/application/registration_controller.dart';
-import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 
 final isLoadingLoginProvider = StateProvider<bool>((ref) => false);
@@ -35,7 +34,7 @@ class LoginPage extends ConsumerWidget {
 
     final formKey = GlobalKey<FormState>();
 
-    Future<void> _submitLogin() async {
+    Future<void> submitLogin() async {
       if (formKey.currentState!.validate()) {
         ref.read(isLoadingLoginProvider.notifier).state = true;
 
@@ -163,7 +162,7 @@ class LoginPage extends ConsumerWidget {
                 isLoading
                     ? CircularProgressIndicator(color: accentButtonColor)
                     : ElevatedButton(
-                        onPressed: _submitLogin,
+                        onPressed: submitLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accentButtonColor,
                           foregroundColor: Colors.black,

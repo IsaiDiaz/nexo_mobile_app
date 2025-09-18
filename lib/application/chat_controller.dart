@@ -87,7 +87,7 @@ class ChatController extends StateNotifier<ChatState> {
       errorMessage: null,
     );
     try {
-      final chats = await _chatRepository.getUserChats(_currentUserId!);
+      final chats = await _chatRepository.getUserChats(_currentUserId);
       state = state.copyWith(userChats: AsyncValue.data(chats));
     } catch (e, st) {
       state = state.copyWith(
@@ -105,14 +105,14 @@ class ChatController extends StateNotifier<ChatState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final chat = await _chatRepository.findOrCreateChat(
-        _currentUserId!,
+        _currentUserId,
         professionalId,
       );
       await loadUserChats();
       _ref.read(currentSelectedChatProvider.notifier).state = chat;
       state = state.copyWith(isLoading: false);
       return chat;
-    } catch (e, st) {
+    } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
       return null;
     }
@@ -202,9 +202,9 @@ class ChatController extends StateNotifier<ChatState> {
     }
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _chatRepository.sendMessage(chatId, _currentUserId!, content);
+      await _chatRepository.sendMessage(chatId, _currentUserId, content);
       state = state.copyWith(isLoading: false);
-    } catch (e, st) {
+    } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }

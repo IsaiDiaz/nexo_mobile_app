@@ -347,16 +347,14 @@ class _ProfessionalDetailsSheetState
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ...schedulesForDay
-                                .map(
-                                  (s) => Text(
-                                    '${s.formattedStartTime} - ${s.formattedEndTime}',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                            ...schedulesForDay.map(
+                              (s) => Text(
+                                '${s.formattedStartTime} - ${s.formattedEndTime}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       );

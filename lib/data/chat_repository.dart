@@ -17,7 +17,7 @@ class ChatRepository {
       final records = await _pocketBase
           .collection('chat')
           .getFullList(
-            filter: 'first_user = "${userId}" || second_user = "${userId}"',
+            filter: 'first_user = "$userId" || second_user = "$userId"',
             expand: 'first_user,second_user',
             sort: '-updated',
           );
@@ -34,7 +34,7 @@ class ChatRepository {
           .collection('chat')
           .getFullList(
             filter:
-                '(first_user = "${userId1}" && second_user = "${userId2}") || (first_user = "${userId2}" && second_user = "${userId1}")',
+                '(first_user = "$userId1" && second_user = "$userId2") || (first_user = "$userId2" && second_user = "$userId1")',
             expand: 'first_user,second_user',
           );
 
@@ -57,7 +57,7 @@ class ChatRepository {
       final records = await _pocketBase
           .collection('messages')
           .getFullList(
-            filter: 'chat = "${chatId}"',
+            filter: 'chat = "$chatId"',
             expand: 'user',
             sort: 'created',
           );
@@ -122,9 +122,7 @@ class ChatRepository {
         });
 
     controller.onCancel = () {
-      if (unsubscribeFunc != null) {
-        unsubscribeFunc();
-      }
+      unsubscribeFunc();
       controller.close();
       print('Suscripción a chat $chatId cancelada y StreamController cerrado.');
     };

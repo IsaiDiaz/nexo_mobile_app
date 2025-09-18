@@ -6,7 +6,6 @@ import 'package:nexo/model/message.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
-import 'package:nexo/presentation/theme/app_colors.dart';
 
 class ChatDetailView extends ConsumerStatefulWidget {
   final Chat chat;

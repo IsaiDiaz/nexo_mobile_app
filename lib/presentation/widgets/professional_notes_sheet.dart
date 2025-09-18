@@ -31,8 +31,6 @@ class _ProfessionalNotesSheetState
   final List<String> _attachmentPaths = [];
 
   final ImagePicker _picker = ImagePicker();
-  String? _audioFilePath;
-  bool _isRecording = false;
 
   @override
   void initState() {
@@ -43,12 +41,6 @@ class _ProfessionalNotesSheetState
   void dispose() {
     _noteTextController.dispose();
     super.dispose();
-  }
-
-  void _loadExistingNotes() {
-    ref
-        .read(notesControllerProvider.notifier)
-        .loadNotesForAppointment(widget.appointmentId);
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -180,7 +172,7 @@ class _ProfessionalNotesSheetState
         ? DarkAppColors.cardAndInputFields
         : LightAppColors.cardAndInputFields;
 
-    final notesState = ref.watch(notesControllerProvider);
+    ref.watch(notesControllerProvider);
     final appointmentNotesAsync = ref.watch(
       appointmentNotesProvider(widget.appointmentId),
     );
@@ -272,7 +264,7 @@ class _ProfessionalNotesSheetState
                 ],
               ),
               if (_attachmentPaths.isNotEmpty)
-                Container(
+                SizedBox(
                   height: 60,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,

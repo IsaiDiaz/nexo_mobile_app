@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/data/local_note_repository.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/local_note.dart';
 import 'package:nexo/model/note_attachment.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 class NotesState {

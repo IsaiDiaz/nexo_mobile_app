@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/presentation/theme/app_colors.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nexo/data/auth_repository.dart';
 
 class ProfessionalCard extends ConsumerWidget {
