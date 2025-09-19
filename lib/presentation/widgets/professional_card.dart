@@ -31,9 +31,7 @@ class ProfessionalCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode
-        ? DarkAppColors.primaryText
-        : LightAppColors.primaryText;
+    final primaryTextColor = LightAppColors.primaryText;
     final secondaryTextColor = isDarkMode
         ? DarkAppColors.secondaryText
         : LightAppColors.secondaryText;

@@ -163,6 +163,7 @@ class AppointmentController extends StateNotifier<AppointmentState> {
     required String professionalProfileId,
     required String clientId,
     required String service,
+    String comments = '',
     required double originalFee,
     String status = 'Pendiente',
   }) async {
@@ -170,12 +171,13 @@ class AppointmentController extends StateNotifier<AppointmentState> {
     try {
       state = state.copyWith(isLoading: true, errorMessage: null);
 
-      final newAppointment = await _appointmentRepository.createAppointment(
+      final _ = await _appointmentRepository.createAppointment(
         start: start,
         end: end,
         professionalProfileId: professionalProfileId,
         clientId: clientId,
         service: service,
+        comments: comments,
         originalFee: originalFee,
         status: status,
       );

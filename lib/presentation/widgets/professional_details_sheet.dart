@@ -43,6 +43,7 @@ class _ProfessionalDetailsSheetState
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String? _selectedServiceType;
+  final TextEditingController _commentsController = TextEditingController();
 
   final List<String> _appointmentTypes = [
     'Consulta',
@@ -181,7 +182,7 @@ class _ProfessionalDetailsSheetState
                                 ? professionalName[0].toUpperCase()
                                 : 'P',
                             style: theme.textTheme.headlineMedium?.copyWith(
-                              color: Colors.white,
+                              color: primaryTextColor,
                             ),
                           )
                         : null,
@@ -291,7 +292,7 @@ class _ProfessionalDetailsSheetState
                               height: 80.0,
                               child: Icon(
                                 Icons.location_pin,
-                                color: theme.colorScheme.primary,
+                                color: primaryTextColor,
                                 size: 40.0,
                               ),
                             ),
@@ -389,7 +390,6 @@ class _ProfessionalDetailsSheetState
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () async {
-                              Navigator.of(context).pop();
                               final chat = await ref
                                   .read(chatControllerProvider.notifier)
                                   .initiateChatWithProfessional(
@@ -440,7 +440,7 @@ class _ProfessionalDetailsSheetState
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               backgroundColor: theme.colorScheme.secondary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: primaryTextColor,
                               textStyle: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -481,7 +481,7 @@ class _ProfessionalDetailsSheetState
                     builder: (context, child) => Theme(
                       data: theme.copyWith(
                         colorScheme: theme.colorScheme.copyWith(
-                          primary: theme.colorScheme.primary,
+                          primary: theme.colorScheme.secondary,
                           surface: cardColor,
                         ),
                         textButtonTheme: TextButtonThemeData(
@@ -516,9 +516,11 @@ class _ProfessionalDetailsSheetState
                     initialTime: TimeOfDay.now(),
                     builder: (context, child) => Theme(
                       data: theme.copyWith(
-                        colorScheme: theme.colorScheme.copyWith(
-                          primary: theme.colorScheme.primary,
-                          surface: cardColor,
+                        colorScheme: ColorScheme.light(
+                          primary: accentButtonColor,
+                          secondary: accentButtonColor,
+                          onPrimary: Colors.black,
+                          onSurface: primaryTextColor,
                         ),
                         textButtonTheme: TextButtonThemeData(
                           style: TextButton.styleFrom(
@@ -535,6 +537,25 @@ class _ProfessionalDetailsSheetState
                     });
                   }
                 },
+              ),
+              //Comentarios de petición de cita
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Comentarios (opcional)',
+                  labelStyle: TextStyle(color: secondaryTextColor),
+                  fillColor: cardColor,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: TextStyle(color: primaryTextColor),
+                maxLength: 500,
+                maxLines: 5,
+                minLines: 1,
+                cursorColor: accentButtonColor,
+                controller: _commentsController,
               ),
               DropdownButtonFormField<String>(
                 value: _selectedServiceType,
@@ -627,12 +648,6 @@ class _ProfessionalDetailsSheetState
     );
     final endDateTime = startDateTime.add(const Duration(hours: 1));
 
-    print('DEBUG: professionalProfileId: ${widget.professionalProfile.id}');
-    print('DEBUG: clientId: ${currentUser.id}');
-    print('DEBUG: selectedServiceType: $_selectedServiceType');
-    print('DEBUG: startDateTime: $startDateTime');
-    print('DEBUG: endDateTime: $endDateTime');
-
     final errorMessage = await ref
         .read(appointmentControllerProvider.notifier)
         .createAppointment(
@@ -641,6 +656,7 @@ class _ProfessionalDetailsSheetState
           professionalProfileId: widget.professionalProfile.id,
           clientId: currentUser.id,
           service: _selectedServiceType!,
+          comments: _commentsController.text.trim(),
           originalFee: 0.0,
           status: 'Pendiente',
         );

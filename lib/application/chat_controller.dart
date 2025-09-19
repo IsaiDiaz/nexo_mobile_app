@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/data/chat_repository.dart';
-import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/chat.dart';
 import 'package:nexo/model/message.dart';

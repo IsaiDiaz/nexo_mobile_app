@@ -28,6 +28,7 @@ class NotesState {
 
 class NotesController extends StateNotifier<NotesState> {
   final LocalNotesRepository _localNotesRepository;
+  // ignore: unused_field
   final AuthRepository _authRepository;
   final Ref _ref;
 

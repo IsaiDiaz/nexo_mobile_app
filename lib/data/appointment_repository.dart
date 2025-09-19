@@ -61,6 +61,7 @@ class AppointmentRepository {
     required String professionalProfileId,
     required String clientId,
     required String service,
+    String comments = '',
     required double originalFee,
     String status = 'Pendiente',
   }) async {
@@ -71,6 +72,7 @@ class AppointmentRepository {
         'professional': professionalProfileId,
         'client': clientId,
         'type': service,
+        'comments': comments,
         'original_fee': originalFee,
         'status': status,
       };
