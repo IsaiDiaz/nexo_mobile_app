@@ -10,6 +10,7 @@ class Appointment {
   final String clientId;
   final String professionalProfileId;
   final String? type;
+  final String? comments;
   final pb.RecordModel _originalRecord;
   final pb.RecordModel? professionalRecord;
   final pb.RecordModel? clientRecord;
@@ -24,6 +25,7 @@ class Appointment {
     required this.clientId,
     required this.professionalProfileId,
     required this.type,
+    this.comments = '',
     required pb.RecordModel originalRecord,
     this.professionalRecord,
     this.clientRecord,
@@ -48,6 +50,7 @@ class Appointment {
       clientId: record.data['client'] as String,
       professionalProfileId: record.data['professional'] as String,
       type: record.data['type'] as String,
+      comments: record.data['comments']?.toString(),
       originalRecord: record,
       professionalRecord: professionalRecord,
       clientRecord: clientRecord,
@@ -87,6 +90,11 @@ class Appointment {
       'client': clientId,
       'professional': professionalProfileId,
       'type': type,
+      'comments': comments,
     };
+  }
+
+  String toString() {
+    return 'Appointment(id: $id, start: $start, end: $end, originalFee: $originalFee, discountFee: $discountFee, status: $status, clientId: $clientId, professionalProfileId: $professionalProfileId, type: $type, comments: $comments)';
   }
 }

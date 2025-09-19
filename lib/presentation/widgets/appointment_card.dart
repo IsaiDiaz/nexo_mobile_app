@@ -90,6 +90,29 @@ class AppointmentCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            //mostrar appointment.comments
+            if (appointment.comments != null &&
+                appointment.comments!.trim().isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Comentarios:',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: secondaryTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    appointment.comments!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
