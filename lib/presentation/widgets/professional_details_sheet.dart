@@ -14,6 +14,7 @@ import 'package:nexo/application/chat_controller.dart';
 import 'package:nexo/presentation/views/chat_detail_view.dart';
 import 'package:nexo/presentation/pages/home_page.dart';
 import 'package:nexo/model/registration_data.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final _professionalSchedulesProvider =
     FutureProvider.family<List<AvailableSchedule>, String>((
@@ -79,6 +80,25 @@ class _ProfessionalDetailsSheetState
       }
     }
     return null;
+  }
+
+  Future<void> openInGoogleMaps(double lat, double lon) async {
+    final googleMapsUri = Uri.parse("geo:$lat,$lon?q=$lat,$lon");
+    final browserUri = Uri.parse(
+      "https://www.google.com/maps/search/?api=1&query=$lat,$lon",
+    );
+
+    if (await canLaunchUrl(googleMapsUri)) {
+      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    if (await canLaunchUrl(browserUri)) {
+      await launchUrl(browserUri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    debugPrint("❌ No se encontró aplicación para manejar el intent de mapas.");
   }
 
   @override
@@ -275,7 +295,7 @@ class _ProfessionalDetailsSheetState
                         initialCenter: professionalCoordinates,
                         initialZoom: 15.0,
                         interactionOptions: const InteractionOptions(
-                          flags: InteractiveFlag.none,
+                          flags: InteractiveFlag.all,
                         ),
                       ),
                       children: [
@@ -301,6 +321,34 @@ class _ProfessionalDetailsSheetState
                       ],
                     ),
                   ),
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: secondaryTextColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Abrir en Google Maps",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.map, color: Colors.blue),
+                      tooltip: "Abrir en Google Maps",
+                      onPressed: () async {
+                        openInGoogleMaps(
+                          professionalCoordinates.latitude,
+                          professionalCoordinates.longitude,
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
               ],
