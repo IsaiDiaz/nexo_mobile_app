@@ -36,20 +36,30 @@ class App extends ConsumerWidget {
       }
     }
 
-    Widget currentScreen;
-    if (isAuthenticated) {
-      currentScreen = const HomePage();
-    } else {
-      if (registrationState.currentStep != RegistrationStep.completed &&
-          registrationState.currentStep != RegistrationStep.roleSelection) {
-        currentScreen = getRegistrationPage(registrationState.currentStep);
-      } else if (registrationState.currentStep ==
-          RegistrationStep.roleSelection) {
-        currentScreen = const RoleSelectionPage();
-      } else {
-        currentScreen = const LoginPage();
+    List<Page> buildPages() {
+      if (isAuthenticated) {
+        return [const MaterialPage(child: HomePage())];
+      }
+
+      switch (registrationState.currentStep) {
+        case RegistrationStep.none:
+          return [const MaterialPage(child: LoginPage())];
+        case RegistrationStep.roleSelection:
+          return [const MaterialPage(child: RoleSelectionPage())];
+        case RegistrationStep.userRegistration:
+          return [MaterialPage(child: UserRegistrationPage())];
+        case RegistrationStep.personDetails:
+          return [MaterialPage(child: PersonDetailsPage())];
+        case RegistrationStep.professionalProfile:
+          return [const MaterialPage(child: ProfessionalProfilePage())];
+        case RegistrationStep.completed:
+          return [const MaterialPage(child: LoginPage())];
       }
     }
+
+    final currentPage = isAuthenticated
+        ? const HomePage()
+        : getRegistrationPage(registrationState.currentStep);
 
     return MaterialApp(
       title: 'Nexo',
@@ -57,7 +67,12 @@ class App extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: currentScreen,
+      home: Navigator(
+        pages: buildPages(),
+        onDidRemovePage: (page) {
+          debugPrint("Página eliminada: ${page.key}");
+        },
+      ),
     );
   }
 }

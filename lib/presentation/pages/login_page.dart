@@ -189,7 +189,7 @@ class LoginPage extends ConsumerWidget {
 
                     ref
                         .read(registrationControllerProvider.notifier)
-                        .resetRegistration();
+                        .startRegistration();
                   },
                   child: Text(
                     '¿No tienes cuenta? Regístrate aquí',

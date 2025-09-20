@@ -199,12 +199,49 @@ class RegistrationController extends StateNotifier<RegistrationState> {
     } finally {}
   }
 
-  void resetRegistration() {
+  void startRegistration() {
     state = RegistrationState(
       currentStep: RegistrationStep.roleSelection,
       registrationData: RegistrationData.empty(),
     );
     print('Proceso de registro reiniciado.');
+  }
+
+  void resetRegistration() {
+    state = RegistrationState(
+      currentStep: RegistrationStep.none,
+      registrationData: RegistrationData.empty(),
+    );
+    print('Estado de registro reseteado.');
+  }
+
+  void goBackStep() {
+    switch (state.currentStep) {
+      case RegistrationStep.userRegistration:
+        // Si estaba en userRegistration, volver a roleSelection
+        state = state.copyWith(currentStep: RegistrationStep.roleSelection);
+        break;
+
+      case RegistrationStep.personDetails:
+        // Si estaba en personDetails, volver a userRegistration
+        state = state.copyWith(currentStep: RegistrationStep.userRegistration);
+        break;
+
+      case RegistrationStep.professionalProfile:
+        // Si estaba en professionalProfile, volver a personDetails
+        state = state.copyWith(currentStep: RegistrationStep.personDetails);
+        break;
+
+      case RegistrationStep.roleSelection:
+        state = state.copyWith(currentStep: RegistrationStep.none);
+        break;
+
+      case RegistrationStep.none:
+      case RegistrationStep.completed:
+        // No hay a dónde volver
+        break;
+    }
+    print('Retrocediendo a: ${state.currentStep}');
   }
 }
 

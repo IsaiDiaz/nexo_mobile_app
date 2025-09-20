@@ -3,13 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/views/client_appointments_view.dart';
+import 'package:nexo/presentation/views/edit_basic_info_view.dart';
 import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
 import 'package:nexo/presentation/views/messages_view.dart';
-
-//Comentario para probar ci/cd y evidencia de ejecuciones automaticas
 
 enum HomeSection {
   searchProfessionals,
@@ -73,7 +72,7 @@ class HomePage extends ConsumerWidget {
         case HomeSection.professionalNotifications:
           return const Center(child: Text('Notificaciones Profesionales'));
         case HomeSection.editPersonalInfo:
-          return const Center(child: Text('Editar Información Personal'));
+          return EditBasicInformationView();
         case HomeSection.editProfessionalInfo:
           return const Center(child: Text('Editar Información Profesional'));
         case HomeSection.settings:

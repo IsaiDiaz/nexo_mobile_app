@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/registration_controller.dart';
 import 'package:nexo/model/registration_data.dart';
+import 'package:nexo/presentation/pages/login_page.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 
 class RoleSelectionPage extends ConsumerWidget {
@@ -34,6 +35,16 @@ class RoleSelectionPage extends ConsumerWidget {
         backgroundColor: theme.appBarTheme.backgroundColor,
         foregroundColor: theme.appBarTheme.foregroundColor,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: primaryTextColor,
+          onPressed: () {
+            ref.read(registrationControllerProvider.notifier).goBackStep();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          },
+        ),
       ),
       body: Center(
         child: Padding(

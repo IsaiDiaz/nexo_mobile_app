@@ -83,6 +83,14 @@ class PersonDetailsPage extends ConsumerWidget {
         backgroundColor: theme.appBarTheme.backgroundColor,
         foregroundColor: theme.appBarTheme.foregroundColor,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: primaryTextColor,
+          onPressed: () {
+            ref.read(registrationControllerProvider.notifier).goBackStep();
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
