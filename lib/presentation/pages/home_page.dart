@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
+import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/model/registration_data.dart';
+import 'package:nexo/presentation/pages/registration/add_professional_profile_page.dart';
 import 'package:nexo/presentation/views/client_appointments_view.dart';
 import 'package:nexo/presentation/views/edit_basic_info_view.dart';
 import 'package:nexo/presentation/views/edit_professional_info_view.dart';
+import 'package:nexo/presentation/views/get_other_role_view.dart';
 import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
@@ -79,7 +82,44 @@ class HomePage extends ConsumerWidget {
         case HomeSection.settings:
           return const Center(child: Text('Configuración General'));
         case HomeSection.getOtherRole:
-          return const Center(child: Text('Obtener el Otro Rol'));
+          final availableRoles = ref.watch(availableUserRolesProvider);
+          final currentUser = ref.watch(currentUserRecordProvider);
+          final activeRole = ref.watch(activeRoleProvider);
+
+          if (!availableRoles.contains(UserRole.professional)) {
+            return const AddProfessionalProfilePage();
+          }
+
+          if (!availableRoles.contains(UserRole.client)) {
+            if (currentUser != null) {
+              Future.microtask(() async {
+                await ref
+                    .read(authRepositoryProvider)
+                    .addRoleToUser(currentUser.id, UserRole.client);
+
+                ref.read(activeRoleProvider.notifier).state =
+                    UserRole.professional;
+                ref.read(homeSectionProvider.notifier).state =
+                    HomeSection.professionalAppointments;
+              });
+            }
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          Future.microtask(() {
+            final newRole = activeRole == UserRole.client
+                ? UserRole.professional
+                : UserRole.client;
+
+            ref.read(activeRoleProvider.notifier).state = newRole;
+            ref
+                .read(homeSectionProvider.notifier)
+                .state = newRole == UserRole.client
+                ? HomeSection.searchProfessionals
+                : HomeSection.professionalAppointments;
+          });
+
+          return const Center(child: CircularProgressIndicator());
         case HomeSection.messages:
           return const MessagesView();
       }

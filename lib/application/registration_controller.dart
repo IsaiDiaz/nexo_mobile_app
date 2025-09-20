@@ -129,6 +129,47 @@ class RegistrationController extends StateNotifier<RegistrationState> {
     }
   }
 
+  Future<String?> addProfessionalProfile({
+    required double hourlyRate,
+    required String address,
+    required String description,
+    required String businessName,
+    required double coordinateLat,
+    required double coordinateLon,
+    required String category,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final currentUser = _authRepository.currentUser;
+      if (currentUser == null) return "Usuario no autenticado.";
+
+      await _authRepository.createProfessionalProfile(
+        userId: currentUser.id,
+        hourlyRate: hourlyRate,
+        address: address,
+        description: description,
+        businessName: businessName,
+        coordinateLat: coordinateLat,
+        coordinateLon: coordinateLon,
+        category: category,
+      );
+
+      await _authRepository.addRoleToUser(
+        currentUser.id,
+        UserRole.professional,
+      );
+
+      state = state.copyWith(isLoading: false);
+      print("Rol profesional agregado correctamente.");
+      return null;
+    } catch (e) {
+      final errorMsg = "Error al agregar perfil profesional: $e";
+      state = state.copyWith(isLoading: false, errorMessage: errorMsg);
+      print(errorMsg);
+      return errorMsg;
+    }
+  }
+
   Future<String?> finalizeClientRegistration() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
