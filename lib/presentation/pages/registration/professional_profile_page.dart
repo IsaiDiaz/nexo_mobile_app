@@ -158,7 +158,7 @@ class _ProfessionalProfilePageState
                   keyboardType: TextInputType.number,
                   style: TextStyle(color: primaryTextColor),
                   decoration: InputDecoration(
-                    labelText: 'Tarifa por Hora (USD)',
+                    labelText: 'Tarifa por Hora (BOB)',
                     labelStyle: TextStyle(color: secondaryTextColor),
                     fillColor: cardAndInputFieldsColor,
                     filled: true,

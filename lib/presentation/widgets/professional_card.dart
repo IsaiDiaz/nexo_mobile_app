@@ -112,7 +112,7 @@ class ProfessionalCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${hourlyRate.toStringAsFixed(2)}/hr',
+                    '\BOB${hourlyRate.toStringAsFixed(2)}/hr',
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: primaryTextColor,
                       fontWeight: FontWeight.bold,

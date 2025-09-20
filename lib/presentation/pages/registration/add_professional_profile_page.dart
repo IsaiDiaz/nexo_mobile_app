@@ -116,7 +116,7 @@ class _AddProfessionalProfilePageState
                   controller: _hourlyRateController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: "Tarifa por Hora (USD)",
+                    labelText: "Tarifa por Hora (BOB)",
                     fillColor: cardAndInputFieldsColor,
                     filled: true,
                   ),
