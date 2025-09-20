@@ -7,7 +7,6 @@ import 'package:nexo/presentation/pages/registration/add_professional_profile_pa
 import 'package:nexo/presentation/views/client_appointments_view.dart';
 import 'package:nexo/presentation/views/edit_basic_info_view.dart';
 import 'package:nexo/presentation/views/edit_professional_info_view.dart';
-import 'package:nexo/presentation/views/get_other_role_view.dart';
 import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
