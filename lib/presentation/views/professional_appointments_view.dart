@@ -138,6 +138,12 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                         ),
                       ),
                       Text(
+                        'Comentarios: ${appointment.comments == null || appointment.comments!.isEmpty ? 'Ninguno' : appointment.comments}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: secondaryTextColor,
+                        ),
+                      ),
+                      Text(
                         'Estado: ${appointment.status}',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: _getStatusColor(

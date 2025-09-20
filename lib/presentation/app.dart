@@ -19,23 +19,6 @@ class App extends ConsumerWidget {
     final isAuthenticated = ref.watch(authStatusProvider);
     final registrationState = ref.watch(registrationControllerProvider);
 
-    Widget getRegistrationPage(RegistrationStep step) {
-      switch (step) {
-        case RegistrationStep.none:
-          return const LoginPage();
-        case RegistrationStep.roleSelection:
-          return const RoleSelectionPage();
-        case RegistrationStep.userRegistration:
-          return UserRegistrationPage();
-        case RegistrationStep.personDetails:
-          return PersonDetailsPage();
-        case RegistrationStep.professionalProfile:
-          return const ProfessionalProfilePage();
-        case RegistrationStep.completed:
-          return const LoginPage();
-      }
-    }
-
     List<Page> buildPages() {
       if (isAuthenticated) {
         return [const MaterialPage(child: HomePage())];
@@ -56,10 +39,6 @@ class App extends ConsumerWidget {
           return [const MaterialPage(child: LoginPage())];
       }
     }
-
-    final currentPage = isAuthenticated
-        ? const HomePage()
-        : getRegistrationPage(registrationState.currentStep);
 
     return MaterialApp(
       title: 'Nexo',
