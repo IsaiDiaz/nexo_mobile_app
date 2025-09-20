@@ -50,6 +50,7 @@ jobs:
         body: |
           Versión de producción compilada desde main
           Commit: ${{ github.sha }}
+          ${{ github.event.head_commit.message }}
         files: build/app/outputs/flutter-apk/app-release.apk
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
