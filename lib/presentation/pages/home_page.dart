@@ -4,6 +4,7 @@ import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/views/client_appointments_view.dart';
 import 'package:nexo/presentation/views/edit_basic_info_view.dart';
+import 'package:nexo/presentation/views/edit_professional_info_view.dart';
 import 'package:nexo/presentation/views/professional_appointments_view.dart';
 import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
@@ -74,7 +75,7 @@ class HomePage extends ConsumerWidget {
         case HomeSection.editPersonalInfo:
           return EditBasicInformationView();
         case HomeSection.editProfessionalInfo:
-          return const Center(child: Text('Editar Información Profesional'));
+          return EditProfessionalInfoView();
         case HomeSection.settings:
           return const Center(child: Text('Configuración General'));
         case HomeSection.getOtherRole:

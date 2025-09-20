@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/registration_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 const List<String> professionalCategories = [
   'Salud',
@@ -32,6 +34,8 @@ class _ProfessionalProfilePageState
       TextEditingController();
 
   String? _selectedCategory;
+
+  LatLng? _selectedLocation;
 
   @override
   void initState() {
@@ -65,8 +69,8 @@ class _ProfessionalProfilePageState
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final double? hourlyRate = double.tryParse(_hourlyRateController.text);
-      final double? lat = double.tryParse(_coordinateLatController.text);
-      final double? lon = double.tryParse(_coordinateLonController.text);
+      final double? lat = _selectedLocation?.latitude;
+      final double? lon = _selectedLocation?.longitude;
 
       if (hourlyRate == null ||
           lat == null ||
@@ -266,76 +270,47 @@ class _ProfessionalProfilePageState
                 ),
                 const SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _coordinateLatController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: primaryTextColor),
-                        decoration: InputDecoration(
-                          labelText: 'Latitud',
-                          labelStyle: TextStyle(color: secondaryTextColor),
-                          fillColor: cardAndInputFieldsColor,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: accentButtonColor,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Introduce la latitud';
-                          }
-                          if (double.tryParse(value) == null) {
-                            return 'Número inválido';
-                          }
-                          return null;
+                SizedBox(
+                  height: 250,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: FlutterMap(
+                      options: MapOptions(
+                        initialCenter: LatLng(
+                          -16.5,
+                          -68.15,
+                        ), // La Paz por defecto
+                        initialZoom: 13,
+                        onTap: (tapPos, point) {
+                          setState(() {
+                            _selectedLocation = point;
+                          });
                         },
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _coordinateLonController,
-                        keyboardType: TextInputType.number,
-                        style: TextStyle(color: primaryTextColor),
-                        decoration: InputDecoration(
-                          labelText: 'Longitud',
-                          labelStyle: TextStyle(color: secondaryTextColor),
-                          fillColor: cardAndInputFieldsColor,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: accentButtonColor,
-                              width: 2,
-                            ),
-                          ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                          userAgentPackageName: "com.example.nexo",
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Introduce la longitud';
-                          }
-                          if (double.tryParse(value) == null) {
-                            return 'Número inválido';
-                          }
-                          return null;
-                        },
-                      ),
+                        if (_selectedLocation != null)
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: _selectedLocation!,
+                                width: 40,
+                                height: 40,
+                                child: const Icon(
+                                  Icons.location_pin,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 20),
 
