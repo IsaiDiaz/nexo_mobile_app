@@ -786,7 +786,7 @@ class _ProfessionalDetailsSheetState
         ),
       );
 
-      if (confirm != true) return; // El usuario canceló
+      if (confirm != true) return;
     }
 
     final errorMessage = await ref

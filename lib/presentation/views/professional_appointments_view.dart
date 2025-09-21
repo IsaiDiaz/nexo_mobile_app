@@ -5,6 +5,7 @@ import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/widgets/professional_notes_sheet.dart';
+import 'package:nexo/presentation/widgets/add_manual_appointmnet_sheet.dart';
 
 class ProfessionalAppointmentsView extends ConsumerWidget {
   const ProfessionalAppointmentsView({super.key});
@@ -59,13 +60,26 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
     }
 
     if (upcomingAppointments.isEmpty) {
-      return Center(
-        child: Text(
-          'No tienes citas próximas.',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: secondaryTextColor,
+      return Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => const AddManualAppointmentSheet(),
+            );
+          },
+
+          child: const Icon(Icons.add),
+        ),
+        body: Center(
+          child: Text(
+            'No tienes citas próximas.',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: secondaryTextColor,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       );
     }
@@ -83,165 +97,177 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
     final sortedDates = groupedByDate.keys.toList()
       ..sort((a, b) => a.compareTo(b));
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: sortedDates.length,
-      itemBuilder: (context, dateIndex) {
-        final date = sortedDates[dateIndex];
-        final appointmentsOnDate = groupedByDate[date]!
-          ..sort((a, b) => a.start.compareTo(b.start));
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => const AddManualAppointmentSheet(),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: sortedDates.length,
+        itemBuilder: (context, dateIndex) {
+          final date = sortedDates[dateIndex];
+          final appointmentsOnDate = groupedByDate[date]!
+            ..sort((a, b) => a.start.compareTo(b.start));
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 12.0,
-                horizontal: 8.0,
-              ),
-              child: Text(
-                DateFormat('EEEE, d MMMM y', 'es').format(date),
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: primaryTextColor,
-                  fontWeight: FontWeight.bold,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12.0,
+                  horizontal: 8.0,
                 ),
-              ),
-            ),
-            ...appointmentsOnDate.map((appointment) {
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                color: cardColor,
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Cliente: ${appointment.clientName}',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: primaryTextColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Servicio: ${appointment.type}',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                      Text(
-                        'Hora: ${appointment.formattedStartTime} - ${appointment.formattedEndTime}',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                      Text(
-                        'Comentarios: ${appointment.comments == null || appointment.comments!.isEmpty ? 'Ninguno' : appointment.comments}',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                      Text(
-                        'Estado: ${appointment.status}',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: _getStatusColor(
-                            appointment.status,
-                            isDarkMode,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (appointment.status == 'Pendiente') ...[
-                            ElevatedButton(
-                              onPressed: () => _updateStatus(
-                                ref,
-                                appointment.id,
-                                'Confirmada',
-                                context,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green[700],
-                                foregroundColor: primaryTextColor,
-                              ),
-                              child: const Text('Confirmar'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              onPressed: () => _updateStatus(
-                                ref,
-                                appointment.id,
-                                'Rechazada',
-                                context,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[700],
-                                foregroundColor: primaryTextColor,
-                              ),
-                              child: const Text('Rechazar'),
-                            ),
-                          ],
-                          if (appointment.status == 'Confirmada') ...[
-                            ElevatedButton(
-                              onPressed: () => _updateStatus(
-                                ref,
-                                appointment.id,
-                                'Cancelada',
-                                context,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange[700],
-                                foregroundColor: primaryTextColor,
-                              ),
-                              child: const Text('Cancelar'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                _showNotesModal(
-                                  context,
-                                  ref,
-                                  appointment.id,
-                                  appointment.clientName,
-                                );
-                              },
-                              icon: const Icon(Icons.notes, size: 18),
-                              label: const Text('Notas'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.colorScheme.primary,
-                                foregroundColor: primaryTextColor,
-                              ),
-                            ),
-                          ],
-                          if (appointment.status == 'Rechazada')
-                            ElevatedButton(
-                              onPressed: () => _deleteAppointment(
-                                ref,
-                                appointment.id,
-                                context,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[700],
-                                foregroundColor: primaryTextColor,
-                              ),
-                              child: const Text('Eliminar'),
-                            ),
-                        ],
-                      ),
-                    ],
+                child: Text(
+                  DateFormat('EEEE, d MMMM y', 'es').format(date),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: primaryTextColor,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              );
-            }),
-            const SizedBox(height: 20),
-          ],
-        );
-      },
+              ),
+              ...appointmentsOnDate.map((appointment) {
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  color: cardColor,
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cliente: ${appointment.clientName}',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: primaryTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Servicio: ${appointment.type}',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                        Text(
+                          'Hora: ${appointment.formattedStartTime} - ${appointment.formattedEndTime}',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                        Text(
+                          'Comentarios: ${appointment.comments == null || appointment.comments!.isEmpty ? 'Ninguno' : appointment.comments}',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                        Text(
+                          'Estado: ${appointment.status}',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: _getStatusColor(
+                              appointment.status,
+                              isDarkMode,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (appointment.status == 'Pendiente') ...[
+                              ElevatedButton(
+                                onPressed: () => _updateStatus(
+                                  ref,
+                                  appointment.id,
+                                  'Confirmada',
+                                  context,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[700],
+                                  foregroundColor: primaryTextColor,
+                                ),
+                                child: const Text('Confirmar'),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () => _updateStatus(
+                                  ref,
+                                  appointment.id,
+                                  'Rechazada',
+                                  context,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[700],
+                                  foregroundColor: primaryTextColor,
+                                ),
+                                child: const Text('Rechazar'),
+                              ),
+                            ],
+                            if (appointment.status == 'Confirmada') ...[
+                              ElevatedButton(
+                                onPressed: () => _updateStatus(
+                                  ref,
+                                  appointment.id,
+                                  'Cancelada',
+                                  context,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange[700],
+                                  foregroundColor: primaryTextColor,
+                                ),
+                                child: const Text('Cancelar'),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _showNotesModal(
+                                    context,
+                                    ref,
+                                    appointment.id,
+                                    appointment.clientName,
+                                  );
+                                },
+                                icon: const Icon(Icons.notes, size: 18),
+                                label: const Text('Notas'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: primaryTextColor,
+                                ),
+                              ),
+                            ],
+                            if (appointment.status == 'Rechazada')
+                              ElevatedButton(
+                                onPressed: () => _deleteAppointment(
+                                  ref,
+                                  appointment.id,
+                                  context,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[700],
+                                  foregroundColor: primaryTextColor,
+                                ),
+                                child: const Text('Eliminar'),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 20),
+            ],
+          );
+        },
+      ),
     );
   }
 
