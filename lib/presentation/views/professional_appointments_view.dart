@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:nexo/presentation/widgets/manage_appointment_types_sheet.dart';
 import 'package:nexo/presentation/widgets/professional_notes_sheet.dart';
 import 'package:nexo/presentation/widgets/add_manual_appointmnet_sheet.dart';
 
@@ -61,16 +62,25 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
 
     if (upcomingAppointments.isEmpty) {
       return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
+        floatingActionButton: GestureDetector(
+          onLongPress: () {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              builder: (_) => const AddManualAppointmentSheet(),
+              builder: (_) => const ManageAppointmentTypesSheet(),
             );
           },
+          child: FloatingActionButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => const AddManualAppointmentSheet(),
+              );
+            },
 
-          child: const Icon(Icons.add),
+            child: const Icon(Icons.add),
+          ),
         ),
         body: Center(
           child: Text(
@@ -98,15 +108,24 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       ..sort((a, b) => a.compareTo(b));
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+      floatingActionButton: GestureDetector(
+        onLongPress: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (_) => const AddManualAppointmentSheet(),
+            builder: (_) => const ManageAppointmentTypesSheet(),
           );
         },
-        child: const Icon(Icons.add),
+        child: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => const AddManualAppointmentSheet(),
+            );
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),

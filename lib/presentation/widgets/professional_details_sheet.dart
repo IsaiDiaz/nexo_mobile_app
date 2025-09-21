@@ -15,6 +15,7 @@ import 'package:nexo/presentation/views/chat_detail_view.dart';
 import 'package:nexo/presentation/pages/home_page.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nexo/application/appointment_type_controller.dart';
 
 final _professionalSchedulesProvider =
     FutureProvider.family<List<AvailableSchedule>, String>((
@@ -46,12 +47,15 @@ class _ProfessionalDetailsSheetState
   String? _selectedServiceType;
   final TextEditingController _commentsController = TextEditingController();
 
-  final List<String> _appointmentTypes = [
-    'Consulta',
-    'Sesión',
-    'Asesoría',
-    'Clase',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(appointmentTypeControllerProvider.notifier)
+          .loadAppointmentTypes(widget.professionalProfile.id);
+    });
+  }
 
   String? _getProfessionalUserAvatarUrl(
     pb.RecordModel professionalProfile,
@@ -177,6 +181,9 @@ class _ProfessionalDetailsSheetState
     final accentButtonColor = isDarkMode
         ? DarkAppColors.accentButton
         : LightAppColors.accentButton;
+
+    final typeState = ref.watch(appointmentTypeControllerProvider);
+    final appointmentTypes = typeState.types;
 
     final pb.RecordModel? professionalUserRecord =
         widget.professionalProfile.expand['user']?.first;
@@ -678,8 +685,9 @@ class _ProfessionalDetailsSheetState
                 ),
                 dropdownColor: cardColor,
                 style: TextStyle(color: primaryTextColor),
-                items: _appointmentTypes.map((type) {
-                  return DropdownMenuItem(value: type, child: Text(type));
+                items: appointmentTypes.map((type) {
+                  final name = type.data['name'] as String? ?? 'Sin nombre';
+                  return DropdownMenuItem(value: name, child: Text(name));
                 }).toList(),
                 onChanged: (value) {
                   setState(() {

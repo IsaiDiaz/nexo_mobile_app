@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:nexo/application/appointment_type_controller.dart';
 
 class AddManualAppointmentSheet extends ConsumerStatefulWidget {
   const AddManualAppointmentSheet({super.key});
@@ -20,12 +21,18 @@ class _AddManualAppointmentSheetState
   String? _selectedServiceType;
   final TextEditingController _commentsController = TextEditingController();
 
-  final List<String> _appointmentTypes = [
-    'Consulta',
-    'Sesión',
-    'Asesoría',
-    'Clase',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      final professional = await ref.read(professionalProfileProvider.future);
+      if (professional != null) {
+        ref
+            .read(appointmentTypeControllerProvider.notifier)
+            .loadAppointmentTypes(professional.id);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +50,9 @@ class _AddManualAppointmentSheetState
     final accentButton = isDark
         ? DarkAppColors.accentButton
         : LightAppColors.accentButton;
+
+    final typeState = ref.watch(appointmentTypeControllerProvider);
+    final appointmentTypes = typeState.types;
 
     return DraggableScrollableSheet(
       expand: false,
@@ -152,8 +162,9 @@ class _AddManualAppointmentSheetState
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                items: _appointmentTypes.map((type) {
-                  return DropdownMenuItem(value: type, child: Text(type));
+                items: appointmentTypes.map((type) {
+                  final name = type.data['name'] as String? ?? 'Sin nombre';
+                  return DropdownMenuItem(value: name, child: Text(name));
                 }).toList(),
                 onChanged: (value) =>
                     setState(() => _selectedServiceType = value),
