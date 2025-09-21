@@ -32,8 +32,8 @@ class Appointment {
   }) : _originalRecord = originalRecord;
 
   factory Appointment.fromRecord(pb.RecordModel record) {
-    final startUtc = DateTime.parse(record.data['start'] as String).toLocal();
-    final endUtc = DateTime.parse(record.data['end'] as String).toLocal();
+    final startUtc = DateTime.parse(record.data['start'] as String).toUtc();
+    final endUtc = DateTime.parse(record.data['end'] as String).toUtc();
 
     final professionalRecord = record.get<pb.RecordModel?>(
       'expand.professional',

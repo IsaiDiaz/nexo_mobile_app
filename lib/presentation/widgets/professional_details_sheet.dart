@@ -101,6 +101,66 @@ class _ProfessionalDetailsSheetState
     debugPrint("❌ No se encontró aplicación para manejar el intent de mapas.");
   }
 
+  // Convierte distintos tipos de hora a "minutos desde las 00:00"
+  int _toMinuteOfDay(Object time) {
+    if (time is DateTime) return time.hour * 60 + time.minute;
+    if (time is TimeOfDay) return time.hour * 60 + time.minute;
+    if (time is String) {
+      // "HH:mm"
+      final parts = time.split(':');
+      final h = int.parse(parts[0]);
+      final m = int.parse(parts[1]);
+      return h * 60 + m;
+    }
+    throw ArgumentError('Tipo de hora no soportado: ${time.runtimeType}');
+  }
+
+  // Mapear weekday (1..7) a "monday", "tuesday", etc.
+  String _weekdayKey(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'monday';
+      case DateTime.tuesday:
+        return 'tuesday';
+      case DateTime.wednesday:
+        return 'wednesday';
+      case DateTime.thursday:
+        return 'thursday';
+      case DateTime.friday:
+        return 'friday';
+      case DateTime.saturday:
+        return 'saturday';
+      case DateTime.sunday:
+        return 'sunday';
+      default:
+        return 'monday';
+    }
+  }
+
+  bool _isWithinAvailability(
+    DateTime selectedDateTime,
+    List<AvailableSchedule> schedules,
+  ) {
+    final dayKey = _weekdayKey(selectedDateTime.weekday);
+    final selMin = selectedDateTime.hour * 60 + selectedDateTime.minute;
+
+    final daySchedules = schedules.where((s) => s.dayOfWeek == dayKey);
+
+    for (final s in daySchedules) {
+      final dynamic startField =
+          (s as dynamic).startTime ?? (s as dynamic).start;
+      final dynamic endField = (s as dynamic).endTime ?? (s as dynamic).end;
+
+      final startMin = _toMinuteOfDay(startField);
+      final endMin = _toMinuteOfDay(endField);
+
+      final inside = selMin >= startMin && selMin <= endMin;
+      if (inside) return true;
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -695,6 +755,39 @@ class _ProfessionalDetailsSheetState
       _selectedTime!.minute,
     );
     final endDateTime = startDateTime.add(const Duration(hours: 1));
+
+    final schedules = await ref.read(
+      _professionalSchedulesProvider(widget.professionalProfile.id).future,
+    );
+    final isWithin = _isWithinAvailability(startDateTime, schedules);
+
+    if (!isWithin) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Fuera de horario"),
+          content: const Text(
+            "La cita solicitada está fuera del horario de disponibilidad del profesional. "
+            "¿Deseas continuar de todas formas?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Continuar"),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return; // El usuario canceló
+    }
 
     final errorMessage = await ref
         .read(appointmentControllerProvider.notifier)
