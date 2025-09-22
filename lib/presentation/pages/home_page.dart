@@ -58,6 +58,8 @@ class HomePage extends ConsumerWidget {
       );
     }
 
+    final authRepo = ref.read(authRepositoryProvider);
+
     String appBarTitle = 'Nexo';
 
     Widget buildBody(HomeSection section) {
@@ -92,14 +94,24 @@ class HomePage extends ConsumerWidget {
           if (!availableRoles.contains(UserRole.client)) {
             if (currentUser != null) {
               Future.microtask(() async {
-                await ref
-                    .read(authRepositoryProvider)
-                    .addRoleToUser(currentUser.id, UserRole.client);
+                await authRepo.addRoleToUser(currentUser.id, UserRole.client);
 
-                ref.read(activeRoleProvider.notifier).state =
-                    UserRole.professional;
-                ref.read(homeSectionProvider.notifier).state =
-                    HomeSection.professionalAppointments;
+                final refreshed = await authRepo.getUserById(currentUser.id);
+
+                if (refreshed != null) {
+                  authRepo.pocketBase.authStore.save(
+                    authRepo.pocketBase.authStore.token,
+                    refreshed,
+                  );
+
+                  ref.invalidate(currentUserRecordProvider);
+                  ref.invalidate(availableUserRolesProvider);
+                  ref.invalidate(activeRoleProvider);
+
+                  ref.read(activeRoleProvider.notifier).state = UserRole.client;
+                  ref.read(homeSectionProvider.notifier).state =
+                      HomeSection.searchProfessionals;
+                }
               });
             }
             return const Center(child: CircularProgressIndicator());

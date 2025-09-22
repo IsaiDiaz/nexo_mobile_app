@@ -4,6 +4,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:nexo/application/registration_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
+import 'package:nexo/application/auth_controller.dart';
+import 'package:nexo/data/auth_repository.dart';
+import 'package:nexo/model/registration_data.dart';
+import 'package:nexo/presentation/pages/home_page.dart';
 
 const List<String> professionalCategories = [
   'Salud',
@@ -67,8 +71,37 @@ class _AddProfessionalProfilePageState
           context,
         ).showSnackBar(SnackBar(content: Text(errorMessage)));
       } else {
+        final authRepo = ref.read(authRepositoryProvider);
+        final currentUser = ref.read(currentUserRecordProvider);
+
+        if (currentUser != null) {
+          await authRepo.addRoleToUser(currentUser.id, UserRole.professional);
+
+          final refreshed = await authRepo.getUserById(currentUser.id);
+          if (refreshed != null) {
+            authRepo.pocketBase.authStore.save(
+              authRepo.pocketBase.authStore.token,
+              refreshed,
+            );
+
+            // invalidar dependencias
+            ref.invalidate(currentUserRecordProvider);
+            ref.invalidate(availableUserRolesProvider);
+            ref.invalidate(activeRoleProvider);
+
+            // setear rol activo como profesional
+            ref.read(activeRoleProvider.notifier).state = UserRole.professional;
+            ref.read(homeSectionProvider.notifier).state =
+                HomeSection.professionalAppointments;
+          }
+        }
+
         if (context.mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomePage()),
+            (route) => false,
+          );
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Perfil profesional agregado.")),
           );
