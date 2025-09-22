@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/model/registration_data.dart';
@@ -12,6 +13,8 @@ import 'package:nexo/presentation/views/schedule_management_view.dart';
 import 'package:nexo/presentation/views/search_professionals_view.dart';
 import 'package:nexo/presentation/widgets/custom_drawer.dart';
 import 'package:nexo/presentation/views/messages_view.dart';
+import 'package:nexo/application/client_appointment_controller.dart';
+import 'package:nexo/application/professional_appointment_controller.dart';
 
 enum HomeSection {
   searchProfessionals,
@@ -96,6 +99,9 @@ class HomePage extends ConsumerWidget {
               Future.microtask(() async {
                 await authRepo.addRoleToUser(currentUser.id, UserRole.client);
 
+                ref.invalidate(currentUserRecordProvider);
+                ref.invalidate(availableUserRolesProvider);
+
                 final refreshed = await authRepo.getUserById(currentUser.id);
 
                 if (refreshed != null) {
@@ -104,9 +110,11 @@ class HomePage extends ConsumerWidget {
                     refreshed,
                   );
 
-                  ref.invalidate(currentUserRecordProvider);
-                  ref.invalidate(availableUserRolesProvider);
                   ref.invalidate(activeRoleProvider);
+                  ref.invalidate(professionalProfileProvider);
+
+                  ref.invalidate(clientAppointmentControllerProvider);
+                  ref.invalidate(professionalAppointmentControllerProvider);
 
                   ref.read(activeRoleProvider.notifier).state = UserRole.client;
                   ref.read(homeSectionProvider.notifier).state =
@@ -122,7 +130,17 @@ class HomePage extends ConsumerWidget {
                 ? UserRole.professional
                 : UserRole.client;
 
-            ref.read(activeRoleProvider.notifier).state = newRole;
+            ref.invalidate(currentUserRecordProvider);
+            ref.invalidate(professionalProfileProvider);
+
+            if (newRole == UserRole.client) {
+              ref.invalidate(professionalAppointmentControllerProvider);
+              ref.invalidate(clientAppointmentControllerProvider);
+            } else {
+              ref.invalidate(clientAppointmentControllerProvider);
+              ref.invalidate(professionalAppointmentControllerProvider);
+            }
+
             ref
                 .read(homeSectionProvider.notifier)
                 .state = newRole == UserRole.client

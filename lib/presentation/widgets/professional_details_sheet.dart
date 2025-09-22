@@ -16,6 +16,7 @@ import 'package:nexo/presentation/pages/home_page.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nexo/application/appointment_type_controller.dart';
+import 'package:nexo/application/client_appointment_controller.dart';
 
 final _professionalSchedulesProvider =
     FutureProvider.family<List<AvailableSchedule>, String>((
@@ -798,7 +799,7 @@ class _ProfessionalDetailsSheetState
     }
 
     final errorMessage = await ref
-        .read(appointmentControllerProvider.notifier)
+        .read(clientAppointmentControllerProvider.notifier)
         .createAppointment(
           start: startDateTime,
           end: endDateTime,

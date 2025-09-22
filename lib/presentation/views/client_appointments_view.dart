@@ -1,6 +1,7 @@
+// lib/presentation/views/client_appointments_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexo/application/appointment_controller.dart';
+import 'package:nexo/application/client_appointment_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/widgets/appointment_card.dart';
@@ -19,9 +20,9 @@ class ClientAppointmentsView extends ConsumerWidget {
         ? DarkAppColors.secondaryText
         : LightAppColors.secondaryText;
 
-    final appointmentState = ref.watch(appointmentControllerProvider);
+    final state = ref.watch(clientAppointmentControllerProvider);
 
-    if (appointmentState.isLoading) {
+    if (state.isLoading && state.appointments.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -39,12 +40,12 @@ class ClientAppointmentsView extends ConsumerWidget {
       );
     }
 
-    if (appointmentState.errorMessage != null) {
+    if (state.errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Error: ${appointmentState.errorMessage}',
+            'Error: ${state.errorMessage}',
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(color: Colors.red),
           ),
@@ -52,10 +53,8 @@ class ClientAppointmentsView extends ConsumerWidget {
       );
     }
 
-    final upcomingAppointments = ref.watch(clientUpcomingAppointmentsProvider);
-    final completedAppointments = ref.watch(
-      clientCompletedAppointmentsProvider,
-    );
+    final upcoming = ref.watch(clientUpcomingAppointmentsProvider);
+    final completed = ref.watch(clientCompletedAppointmentsProvider);
 
     return DefaultTabController(
       length: 2,
@@ -73,15 +72,15 @@ class ClientAppointmentsView extends ConsumerWidget {
           Expanded(
             child: TabBarView(
               children: [
-                _buildAppointmentsList(
+                _buildList(
                   context,
-                  upcomingAppointments,
+                  upcoming,
                   'No tienes citas próximas o pendientes.',
                   isDarkMode,
                 ),
-                _buildAppointmentsList(
+                _buildList(
                   context,
-                  completedAppointments,
+                  completed,
                   'No tienes citas en tu historial.',
                   isDarkMode,
                 ),
@@ -93,38 +92,32 @@ class ClientAppointmentsView extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppointmentsList(
+  Widget _buildList(
     BuildContext context,
-    List<Appointment> appointments,
-    String emptyMessage,
-    bool isDarkMode,
+    List<Appointment> items,
+    String empty,
+    bool isDark,
   ) {
-    if (appointments.isEmpty) {
+    if (items.isEmpty) {
       final theme = Theme.of(context);
-      final secondaryTextColor = isDarkMode
+      final secondary = isDark
           ? DarkAppColors.secondaryText
           : LightAppColors.secondaryText;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            emptyMessage,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: secondaryTextColor,
-            ),
+            empty,
+            style: theme.textTheme.bodyLarge?.copyWith(color: secondary),
             textAlign: TextAlign.center,
           ),
         ),
       );
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: appointments.length,
-      itemBuilder: (context, index) {
-        final appointment = appointments[index];
-        return AppointmentCard(appointment: appointment);
-      },
+      itemCount: items.length,
+      itemBuilder: (_, i) => AppointmentCard(appointment: items[i]),
     );
   }
 }

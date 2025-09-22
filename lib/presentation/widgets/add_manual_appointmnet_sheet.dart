@@ -5,6 +5,7 @@ import 'package:nexo/application/appointment_controller.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/application/appointment_type_controller.dart';
+import 'package:nexo/application/professional_appointment_controller.dart';
 
 class AddManualAppointmentSheet extends ConsumerStatefulWidget {
   const AddManualAppointmentSheet({super.key});
@@ -227,7 +228,7 @@ class _AddManualAppointmentSheetState
     }
 
     final error = await ref
-        .read(appointmentControllerProvider.notifier)
+        .read(professionalAppointmentControllerProvider.notifier)
         .createAppointment(
           start: start,
           end: end,
@@ -248,7 +249,9 @@ class _AddManualAppointmentSheetState
         const SnackBar(content: Text("Cita manual creada exitosamente")),
       );
       Navigator.pop(context);
-      ref.invalidate(upcomingAppointmentsProvider);
+      ref
+          .read(professionalAppointmentControllerProvider.notifier)
+          .loadProfessionalAppointments();
     }
   }
 }

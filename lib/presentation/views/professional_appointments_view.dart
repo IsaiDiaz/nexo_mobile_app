@@ -1,7 +1,9 @@
+// lib/presentation/views/professional_appointments_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:nexo/application/appointment_controller.dart';
+
+import 'package:nexo/application/professional_appointment_controller.dart';
 import 'package:nexo/model/appointment.dart';
 import 'package:nexo/presentation/theme/app_colors.dart';
 import 'package:nexo/presentation/widgets/manage_appointment_types_sheet.dart';
@@ -15,21 +17,20 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final primaryTextColor = isDarkMode
+    final primaryText = isDarkMode
         ? DarkAppColors.primaryText
         : LightAppColors.primaryText;
-    final secondaryTextColor = isDarkMode
+    final secondaryText = isDarkMode
         ? DarkAppColors.secondaryText
         : LightAppColors.secondaryText;
     final cardColor = isDarkMode
         ? DarkAppColors.cardAndInputFields
         : LightAppColors.cardAndInputFields;
 
-    final appointmentState = ref.watch(appointmentControllerProvider);
+    final state = ref.watch(professionalAppointmentControllerProvider);
+    final upcoming = ref.watch(professionalUpcomingAppointmentsProvider);
 
-    final upcomingAppointments = ref.watch(upcomingAppointmentsProvider);
-
-    if (appointmentState.isLoading && appointmentState.appointments.isEmpty) {
+    if (state.isLoading && state.appointments.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -39,7 +40,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
             Text(
               'Cargando citas...',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: secondaryTextColor,
+                color: secondaryText,
               ),
             ),
           ],
@@ -47,12 +48,12 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       );
     }
 
-    if (appointmentState.errorMessage != null) {
+    if (state.errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Error: ${appointmentState.errorMessage}',
+            'Error: ${state.errorMessage}',
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(color: Colors.red),
           ),
@@ -60,7 +61,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       );
     }
 
-    if (upcomingAppointments.isEmpty) {
+    if (upcoming.isEmpty) {
       return Scaffold(
         floatingActionButton: GestureDetector(
           onLongPress: () {
@@ -78,7 +79,6 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                 builder: (_) => const AddManualAppointmentSheet(),
               );
             },
-
             child: const Icon(Icons.add),
           ),
         ),
@@ -86,7 +86,7 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
           child: Text(
             'No tienes citas próximas.',
             style: theme.textTheme.headlineSmall?.copyWith(
-              color: secondaryTextColor,
+              color: secondaryText,
             ),
             textAlign: TextAlign.center,
           ),
@@ -94,18 +94,12 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
       );
     }
 
-    final Map<DateTime, List<Appointment>> groupedByDate = {};
-    for (var appointment in upcomingAppointments) {
-      final dateOnly = DateTime(
-        appointment.start.year,
-        appointment.start.month,
-        appointment.start.day,
-      );
-      groupedByDate.putIfAbsent(dateOnly, () => []).add(appointment);
+    final Map<DateTime, List<Appointment>> grouped = {};
+    for (final a in upcoming) {
+      final d = DateTime(a.start.year, a.start.month, a.start.day);
+      grouped.putIfAbsent(d, () => []).add(a);
     }
-
-    final sortedDates = groupedByDate.keys.toList()
-      ..sort((a, b) => a.compareTo(b));
+    final dates = grouped.keys.toList()..sort();
 
     return Scaffold(
       floatingActionButton: GestureDetector(
@@ -128,13 +122,12 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
         ),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: sortedDates.length,
-        itemBuilder: (context, dateIndex) {
-          final date = sortedDates[dateIndex];
-          final appointmentsOnDate = groupedByDate[date]!
+        padding: const EdgeInsets.all(16),
+        itemCount: dates.length,
+        itemBuilder: (_, i) {
+          final date = dates[i];
+          final items = grouped[date]!
             ..sort((a, b) => a.start.compareTo(b.start));
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -146,142 +139,32 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
                 child: Text(
                   DateFormat('EEEE, d MMMM y', 'es').format(date),
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    color: primaryTextColor,
+                    color: primaryText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              ...appointmentsOnDate.map((appointment) {
-                return Card(
+              ...items!.map(
+                (a) => Card(
                   margin: const EdgeInsets.symmetric(vertical: 8.0),
                   color: cardColor,
                   elevation: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Cliente: ${appointment.clientName}',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: primaryTextColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Servicio: ${appointment.type}',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                        Text(
-                          'Hora: ${appointment.formattedStartTime} - ${appointment.formattedEndTime}',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                        Text(
-                          'Comentarios: ${appointment.comments == null || appointment.comments!.isEmpty ? 'Ninguno' : appointment.comments}',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                        Text(
-                          'Estado: ${appointment.status}',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: _getStatusColor(
-                              appointment.status,
-                              isDarkMode,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            if (appointment.status == 'Pendiente') ...[
-                              ElevatedButton(
-                                onPressed: () => _updateStatus(
-                                  ref,
-                                  appointment.id,
-                                  'Confirmada',
-                                  context,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[700],
-                                  foregroundColor: primaryTextColor,
-                                ),
-                                child: const Text('Confirmar'),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton(
-                                onPressed: () => _updateStatus(
-                                  ref,
-                                  appointment.id,
-                                  'Rechazada',
-                                  context,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red[700],
-                                  foregroundColor: primaryTextColor,
-                                ),
-                                child: const Text('Rechazar'),
-                              ),
-                            ],
-                            if (appointment.status == 'Confirmada') ...[
-                              ElevatedButton(
-                                onPressed: () => _updateStatus(
-                                  ref,
-                                  appointment.id,
-                                  'Cancelada',
-                                  context,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange[700],
-                                  foregroundColor: primaryTextColor,
-                                ),
-                                child: const Text('Cancelar'),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  _showNotesModal(
-                                    context,
-                                    ref,
-                                    appointment.id,
-                                    appointment.clientName,
-                                  );
-                                },
-                                icon: const Icon(Icons.notes, size: 18),
-                                label: const Text('Notas'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: primaryTextColor,
-                                ),
-                              ),
-                            ],
-                            if (appointment.status == 'Rechazada')
-                              ElevatedButton(
-                                onPressed: () => _deleteAppointment(
-                                  ref,
-                                  appointment.id,
-                                  context,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red[700],
-                                  foregroundColor: primaryTextColor,
-                                ),
-                                child: const Text('Eliminar'),
-                              ),
-                          ],
-                        ),
-                      ],
+                    child: _AppointmentRow(
+                      appointment: a,
+                      isDarkMode: isDarkMode,
+                      primaryText: primaryText,
+                      secondaryText: secondaryText,
+                      onUpdateStatus: (status) =>
+                          _updateStatus(ref, a.id, status, context),
+                      onDelete: () => _deleteAppointment(ref, a.id, context),
+                      onNotes: () =>
+                          _showNotesModal(context, ref, a.id, a.clientName),
                     ),
                   ),
-                );
-              }),
+                ),
+              ),
               const SizedBox(height: 20),
             ],
           );
@@ -290,111 +173,224 @@ class ProfessionalAppointmentsView extends ConsumerWidget {
     );
   }
 
-  Color _getStatusColor(String status, bool isDarkMode) {
-    switch (status) {
+  Color _statusColor(String s, bool dark) {
+    switch (s) {
       case 'Pendiente':
-        return isDarkMode ? Colors.orange[300]! : Colors.orange[700]!;
+        return dark ? Colors.orange[300]! : Colors.orange[700]!;
       case 'Confirmada':
-        return isDarkMode ? Colors.green[300]! : Colors.green[700]!;
+        return dark ? Colors.green[300]! : Colors.green[700]!;
       case 'Rechazada':
       case 'Cancelada':
-        return isDarkMode ? Colors.red[300]! : Colors.red[700]!;
+        return dark ? Colors.red[300]! : Colors.red[700]!;
       default:
-        return isDarkMode
+        return dark
             ? DarkAppColors.secondaryText
             : LightAppColors.secondaryText;
     }
   }
 
-  void _updateStatus(
+  Future<void> _updateStatus(
     WidgetRef ref,
-    String appointmentId,
-    String newStatus,
-    BuildContext context,
+    String id,
+    String status,
+    BuildContext ctx,
   ) async {
-    final errorMessage = await ref
-        .read(appointmentControllerProvider.notifier)
-        .updateAppointmentStatus(appointmentId, newStatus);
-
-    if (errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar estado: $errorMessage')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cita actualizada a "$newStatus".')),
-      );
-    }
+    final err = await ref
+        .read(professionalAppointmentControllerProvider.notifier)
+        .updateAppointmentStatus(id, status);
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text(
+          err != null
+              ? 'Error al actualizar estado: $err'
+              : 'Cita actualizada a "$status".',
+        ),
+      ),
+    );
   }
 
-  void _deleteAppointment(
+  Future<void> _deleteAppointment(
     WidgetRef ref,
-    String appointmentId,
-    BuildContext context,
+    String id,
+    BuildContext ctx,
   ) async {
-    final bool? confirmDelete = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Eliminar Cita'),
-          content: const Text(
-            '¿Estás seguro de que quieres eliminar esta cita? Esta acción no se puede deshacer.',
+    final confirm = await showDialog<bool>(
+      context: ctx,
+      builder: (d) => AlertDialog(
+        title: const Text('Eliminar Cita'),
+        content: const Text(
+          '¿Estás seguro de que quieres eliminar esta cita? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(d).pop(false),
+            child: const Text('Cancelar'),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text(
-                'Eliminar',
-                style: TextStyle(color: Colors.red),
-              ),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-            ),
-          ],
-        );
-      },
+          TextButton(
+            onPressed: () => Navigator.of(d).pop(true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
-
-    if (confirmDelete == true) {
-      final errorMessage = await ref
-          .read(appointmentControllerProvider.notifier)
-          .deleteAppointment(appointmentId);
-
-      if (errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al eliminar cita: $errorMessage')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cita eliminada exitosamente.')),
-        );
-      }
+    if (confirm == true) {
+      final err = await ref
+          .read(professionalAppointmentControllerProvider.notifier)
+          .deleteAppointment(id);
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text(
+            err != null
+                ? 'Error al eliminar cita: $err'
+                : 'Cita eliminada exitosamente.',
+          ),
+        ),
+      );
     }
   }
 
   void _showNotesModal(
     BuildContext context,
     WidgetRef ref,
-    String appointmentId,
+    String apptId,
     String clientName,
   ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) {
-        return ProfessionalNotesSheet(
-          appointmentId: appointmentId,
-          clientName: clientName,
-        );
-      },
+      builder: (_) =>
+          ProfessionalNotesSheet(appointmentId: apptId, clientName: clientName),
     ).whenComplete(() {
-      ref.invalidate(upcomingAppointmentsProvider);
+      // Recargar profesional al cerrar el sheet de notas
+      ref
+          .read(professionalAppointmentControllerProvider.notifier)
+          .loadProfessionalAppointments();
     });
+  }
+}
+
+class _AppointmentRow extends StatelessWidget {
+  const _AppointmentRow({
+    required this.appointment,
+    required this.isDarkMode,
+    required this.primaryText,
+    required this.secondaryText,
+    required this.onUpdateStatus,
+    required this.onDelete,
+    required this.onNotes,
+  });
+
+  final Appointment appointment;
+  final bool isDarkMode;
+  final Color primaryText;
+  final Color secondaryText;
+  final void Function(String newStatus) onUpdateStatus;
+  final VoidCallback onDelete;
+  final VoidCallback onNotes;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Color _statusColor(String s) {
+      switch (s) {
+        case 'Pendiente':
+          return isDarkMode ? Colors.orange[300]! : Colors.orange[700]!;
+        case 'Confirmada':
+          return isDarkMode ? Colors.green[300]! : Colors.green[700]!;
+        case 'Rechazada':
+        case 'Cancelada':
+          return isDarkMode ? Colors.red[300]! : Colors.red[700]!;
+        default:
+          return isDarkMode
+              ? DarkAppColors.secondaryText
+              : LightAppColors.secondaryText;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Cliente: ${appointment.clientName}',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: primaryText,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Servicio: ${appointment.type}',
+          style: theme.textTheme.bodyLarge?.copyWith(color: secondaryText),
+        ),
+        Text(
+          'Hora: ${appointment.formattedStartTime} - ${appointment.formattedEndTime}',
+          style: theme.textTheme.bodyLarge?.copyWith(color: secondaryText),
+        ),
+        Text(
+          'Comentarios: ${appointment.comments == null || appointment.comments!.isEmpty ? 'Ninguno' : appointment.comments}',
+          style: theme.textTheme.bodyLarge?.copyWith(color: secondaryText),
+        ),
+        Text(
+          'Estado: ${appointment.status}',
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: _statusColor(appointment.status),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (appointment.status == 'Pendiente') ...[
+              ElevatedButton(
+                onPressed: () => onUpdateStatus('Confirmada'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[700],
+                  foregroundColor: primaryText,
+                ),
+                child: const Text('Confirmar'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => onUpdateStatus('Rechazada'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[700],
+                  foregroundColor: primaryText,
+                ),
+                child: const Text('Rechazar'),
+              ),
+            ],
+            if (appointment.status == 'Confirmada') ...[
+              ElevatedButton(
+                onPressed: () => onUpdateStatus('Cancelada'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange[700],
+                  foregroundColor: primaryText,
+                ),
+                child: const Text('Cancelar'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: onNotes,
+                icon: const Icon(Icons.notes, size: 18),
+                label: const Text('Notas'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: primaryText,
+                ),
+              ),
+            ],
+            if (appointment.status == 'Rechazada')
+              ElevatedButton(
+                onPressed: onDelete,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[700],
+                  foregroundColor: primaryText,
+                ),
+                child: const Text('Eliminar'),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 }
