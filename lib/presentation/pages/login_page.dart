@@ -58,6 +58,56 @@ class LoginPage extends ConsumerWidget {
       }
     }
 
+    Future<void> loginOffline(BuildContext context, WidgetRef ref) async {
+      final pinController = TextEditingController();
+
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Acceso sin conexión'),
+          content: TextField(
+            controller: pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'PIN de acceso',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final pin = pinController.text.trim();
+                if (pin.isEmpty) return;
+
+                final auth = ref.read(authControllerProvider.notifier);
+                final err = await auth.signInOffline(pin);
+
+                Navigator.of(context).pop(); // cierra el diálogo
+
+                if (err != null) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(err)));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Inicio de sesión offline exitoso'),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Acceder'),
+            ),
+          ],
+        ),
+      );
+    }
+
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final appColors = isDarkMode
@@ -99,6 +149,8 @@ class LoginPage extends ConsumerWidget {
                 TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
+                  textCapitalization: TextCapitalization.none,
+                  autocorrect: false,
                   style: TextStyle(color: primaryTextColor),
                   decoration: InputDecoration(
                     labelText: 'Email / Usuario',
@@ -180,6 +232,16 @@ class LoginPage extends ConsumerWidget {
                         ),
                       ),
                 const SizedBox(height: 20),
+
+                TextButton(
+                  onPressed: () => loginOffline(context, ref),
+                  child: Text(
+                    'Ingresar sin conexión',
+                    style: TextStyle(color: secondaryTextColor),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
 
                 TextButton(
                   onPressed: () {

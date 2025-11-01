@@ -1,15 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/auth_repository.dart';
+import 'package:nexo/data/auth_offline_repository.dart';
 import 'package:nexo/model/registration_data.dart';
+import 'package:nexo/presentation/app.dart'; // para usar rootNavigatorKey
 
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  final OfflineAuthRepository _offlineAuthRepository;
   final Ref _ref;
 
-  AuthController(this._authRepository, this._ref) : super(AuthState.initial) {
+  AuthController(this._authRepository, this._offlineAuthRepository, this._ref)
+    : super(AuthState.initial) {
     _checkInitialAuthStatus();
 
     final disposeListener = _authRepository.pocketBase.authStore.onChange
@@ -37,13 +42,95 @@ class AuthController extends StateNotifier<AuthState> {
     state = AuthState.loading;
     try {
       await _authRepository.signIn(identity, password);
+
+      final hasPin = await _offlineAuthRepository.hasPinForCurrentUser();
+      if (hasPin) {
+        print("Usuario ya tiene PIN, guardando sesión local automáticamente.");
+        await _offlineAuthRepository.persistOfflineSession("");
+      } else {
+        print("⚠️ No hay PIN todavía, solicitando creación de PIN.");
+        _askForPinAfterLogin();
+      }
+
       state = AuthState.authenticated;
+      _ref.read(offlineModeProvider.notifier).state = false;
       print("AuthController: signIn exitoso");
       return null;
     } catch (e) {
       state = AuthState.error;
       return e.toString();
     }
+  }
+
+  void _askForPinAfterLogin() {
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) {
+      print(
+        "⚠️ rootNavigatorKey.context == null. No se pudo mostrar el diálogo.",
+      );
+      return;
+    }
+
+    final pinController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Acceso sin conexión'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Crea un PIN de 4 dígitos para poder iniciar sesión sin conexión en el futuro.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              maxLength: 4,
+              decoration: const InputDecoration(
+                labelText: 'PIN de 4 dígitos',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Más tarde'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final pin = pinController.text.trim();
+              if (pin.length < 4) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text('El PIN debe tener 4 dígitos')),
+                );
+                return;
+              }
+
+              try {
+                await _offlineAuthRepository.persistOfflineSession(pin);
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('PIN guardado. Modo offline habilitado.'),
+                  ),
+                );
+              } catch (e) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(content: Text('Error al guardar PIN: $e')),
+                );
+              }
+            },
+            child: const Text('Guardar PIN'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<String?> signUp(
@@ -74,12 +161,47 @@ class AuthController extends StateNotifier<AuthState> {
   final authControllerProvider =
       StateNotifierProvider<AuthController, AuthState>((ref) {
         final authRepository = ref.watch(authRepositoryProvider);
-        return AuthController(authRepository, ref);
+        final offlineAuthRepository = ref.watch(offlineAuthRepositoryProvider);
+        return AuthController(authRepository, offlineAuthRepository, ref);
       });
+
+  Future<String?> enableOfflineAccess(String pin) async {
+    try {
+      await _offlineAuthRepository.persistOfflineSession(pin);
+      print("💾 Sesión local guardada con PIN para acceso offline.");
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> signInOffline(String pin) async {
+    state = AuthState.loading;
+    try {
+      final session = await _offlineAuthRepository.signInOffline(pin);
+      if (session != null) {
+        state = AuthState.authenticated;
+        _ref.read(offlineModeProvider.notifier).state = true;
+        if (session != null) {
+          print("✅ Sesión local encontrada: $session");
+        } else {
+          print("❌ No se encontró sesión local en SQLite");
+        }
+        return null;
+      } else {
+        state = AuthState.error;
+        return "No hay sesión almacenada";
+      }
+    } catch (e) {
+      state = AuthState.error;
+      return e.toString();
+    }
+  }
 
   Future<void> signOut() async {
     state = AuthState.loading;
     await _authRepository.signOut();
+    _ref.read(offlineModeProvider.notifier).state = false;
     state = AuthState.unauthenticated;
   }
 }
@@ -87,7 +209,8 @@ class AuthController extends StateNotifier<AuthState> {
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
   (ref) {
     final authRepository = ref.watch(authRepositoryProvider);
-    return AuthController(authRepository, ref);
+    final offlineAuthRepository = ref.watch(offlineAuthRepositoryProvider);
+    return AuthController(authRepository, offlineAuthRepository, ref);
   },
 );
 

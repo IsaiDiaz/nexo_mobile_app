@@ -12,6 +12,8 @@ class AuthRepository {
     _pb = pb.PocketBase(
       dotenv.env['POCKETBASE_URL'] ?? "http://127.0.0.1:8090",
     );
+
+    print('PocketBase initialized with URL: ${_pb.baseURL}');
   }
 
   pb.PocketBase get pocketBase => _pb;
@@ -69,7 +71,11 @@ class AuthRepository {
       return userRecord;
     } on pb.ClientException catch (e) {
       print('Error en signUpWithProfile (PB ClientException): ${e.response}');
-      throw Exception('Error al registrar usuario: ${e.response['message']}');
+      final msg =
+          e.response['message'] ??
+          e.response['data']?.toString() ??
+          e.toString();
+      throw Exception('Error al registrar usuario: $msg');
     } catch (e) {
       print('Error en signUpWithProfile (General Exception): $e');
       throw Exception('Ocurrió un error inesperado durante el registro: $e');

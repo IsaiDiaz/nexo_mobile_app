@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/application/registration_controller.dart';
+import 'package:nexo/data/auth_offline_repository.dart';
 import 'package:nexo/model/registration_data.dart';
 import 'package:nexo/presentation/pages/login_page.dart';
 import 'package:nexo/presentation/pages/home_page.dart';
+import 'package:nexo/presentation/pages/offline_home_page.dart';
 import 'package:nexo/presentation/pages/registration/role_selection_page.dart';
 import 'package:nexo/presentation/pages/registration/user_registration_page.dart';
 import 'package:nexo/presentation/pages/registration/person_details_page.dart';
 import 'package:nexo/presentation/pages/registration/professional_profile_page.dart';
 import 'package:nexo/presentation/theme/app_theme.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -17,11 +21,16 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAuthenticated = ref.watch(authStatusProvider);
+    final isOffline = ref.watch(offlineModeProvider);
     final registrationState = ref.watch(registrationControllerProvider);
 
     List<Page> buildPages() {
       if (isAuthenticated) {
-        return [const MaterialPage(child: HomePage())];
+        if (isOffline) {
+          return [const MaterialPage(child: OfflineHomePage())];
+        } else {
+          return [const MaterialPage(child: HomePage())];
+        }
       }
 
       switch (registrationState.currentStep) {
@@ -42,6 +51,7 @@ class App extends ConsumerWidget {
 
     return MaterialApp(
       title: 'Nexo',
+      navigatorKey: rootNavigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
