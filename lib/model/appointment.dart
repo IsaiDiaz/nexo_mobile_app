@@ -94,6 +94,38 @@ class Appointment {
     };
   }
 
+  //toMap and fromMap methods
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'start': start.toIso8601String(),
+      'end': end.toIso8601String(),
+      'originalFee': originalFee,
+      'discountFee': discountFee,
+      'status': status,
+      'clientId': clientId,
+      'professionalProfileId': professionalProfileId,
+      'type': type,
+      'comments': comments,
+    };
+  }
+
+  factory Appointment.fromMap(Map<String, dynamic> map) {
+    return Appointment(
+      id: map['id'],
+      start: DateTime.parse(map['start']),
+      end: DateTime.parse(map['end']),
+      originalFee: map['originalFee'],
+      discountFee: map['discountFee'],
+      status: map['status'],
+      clientId: map['clientId'],
+      professionalProfileId: map['professionalProfileId'],
+      type: map['type'],
+      comments: map['comments'],
+      originalRecord: pb.RecordModel(map),
+    );
+  }
+
   String toString() {
     return 'Appointment(id: $id, start: $start, end: $end, originalFee: $originalFee, discountFee: $discountFee, status: $status, clientId: $clientId, professionalProfileId: $professionalProfileId, type: $type, comments: $comments)';
   }

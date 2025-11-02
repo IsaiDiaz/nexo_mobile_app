@@ -4,7 +4,8 @@ import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/auth_repository.dart';
 import 'package:nexo/data/auth_offline_repository.dart';
 import 'package:nexo/model/registration_data.dart';
-import 'package:nexo/presentation/app.dart'; // para usar rootNavigatorKey
+import 'package:nexo/presentation/app.dart';
+import 'package:nexo/data/offline_data_sync.dart';
 
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
@@ -43,6 +44,12 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       await _authRepository.signIn(identity, password);
 
+      final currentUser = _authRepository.currentUser;
+      final userId = currentUser?.id;
+      if (userId == null) {
+        throw Exception("No se pudo obtener el ID del usuario autenticado.");
+      }
+
       final hasPin = await _offlineAuthRepository.hasPinForCurrentUser();
       if (hasPin) {
         print("Usuario ya tiene PIN, guardando sesión local automáticamente.");
@@ -51,6 +58,9 @@ class AuthController extends StateNotifier<AuthState> {
         print("⚠️ No hay PIN todavía, solicitando creación de PIN.");
         _askForPinAfterLogin();
       }
+
+      final offlineSync = _ref.read(offlineDataSyncProvider);
+      await offlineSync.syncUserData();
 
       state = AuthState.authenticated;
       _ref.read(offlineModeProvider.notifier).state = false;
@@ -202,6 +212,10 @@ class AuthController extends StateNotifier<AuthState> {
     state = AuthState.loading;
     await _authRepository.signOut();
     _ref.read(offlineModeProvider.notifier).state = false;
+    _ref.invalidate(currentUserRecordProvider);
+    _ref.invalidate(availableUserRolesProvider);
+    _ref.invalidate(activeRoleProvider);
+
     state = AuthState.unauthenticated;
   }
 }

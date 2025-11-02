@@ -3,6 +3,8 @@ import 'package:pocketbase/pocketbase.dart' as pb;
 import 'package:nexo/data/appointment_repository.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:nexo/model/appointment.dart';
+import 'package:nexo/data/local/local_appointment_repository.dart';
+import 'package:nexo/data/auth_offline_repository.dart';
 
 class AppointmentState {
   final List<Appointment> appointments;
@@ -89,6 +91,19 @@ class AppointmentController extends StateNotifier<AppointmentState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final isOffline = _ref.read(offlineModeProvider);
+
+      if (isOffline) {
+        // 🔸 Cargar desde SQLite
+        final localRepo = LocalAppointmentRepository();
+        final cachedAppointments = await localRepo.getAppointments();
+        state = state.copyWith(
+          isLoading: false,
+          appointments: cachedAppointments,
+        );
+        return;
+      }
+
       final professionalProfile = _ref.read(professionalProfileProvider).value;
 
       if (professionalProfile == null) {

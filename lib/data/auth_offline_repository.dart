@@ -16,8 +16,18 @@ class OfflineAuthRepository {
 
     final userId = user.id;
 
-    // 🔹 Guarda el PIN asociado al usuario
-    await _secureStorage.savePin(pin, userId);
+    // 🔹 Verificar si ya hay un PIN guardado
+    final hasExistingPin = await _secureStorage.hasPin(userId);
+
+    // 🔸 Solo guardamos un nuevo PIN si el usuario lo está definiendo explícitamente
+    if (pin.isNotEmpty) {
+      await _secureStorage.savePin(pin, userId);
+      print("🔐 Nuevo PIN guardado para el usuario $userId");
+    } else if (!hasExistingPin) {
+      print("⚠️ No hay PIN existente ni se proporcionó uno nuevo para $userId");
+    } else {
+      print("🔁 Manteniendo PIN existente para $userId");
+    }
 
     final now = DateTime.now().millisecondsSinceEpoch;
     final sessionData = {
@@ -36,9 +46,8 @@ class OfflineAuthRepository {
 
     await _localSession.saveSession(sessionData);
 
-    print(" Sesión offline guardada para el usuario $userId");
-    print(" PIN guardado para el usuario $userId");
-    print("datos de sesión: $sessionData");
+    print("💾 Sesión offline guardada para el usuario $userId");
+    print("📦 Datos de sesión local: $sessionData");
   }
 
   Future<void> persistOfflineSessionIfPossible() async {

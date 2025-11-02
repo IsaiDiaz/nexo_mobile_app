@@ -44,8 +44,6 @@ class LoginPage extends ConsumerWidget {
           passwordController.text,
         );
 
-        ref.read(isLoadingLoginProvider.notifier).state = false;
-
         if (errorMessage != null) {
           ScaffoldMessenger.of(
             context,
@@ -55,6 +53,8 @@ class LoginPage extends ConsumerWidget {
           passwordController.clear();
           formKey.currentState?.reset();
         }
+
+        ref.read(isLoadingLoginProvider.notifier).state = false;
       }
     }
 
@@ -87,7 +87,7 @@ class LoginPage extends ConsumerWidget {
                 final auth = ref.read(authControllerProvider.notifier);
                 final err = await auth.signInOffline(pin);
 
-                Navigator.of(context).pop(); // cierra el diálogo
+                Navigator.of(context).pop();
 
                 if (err != null) {
                   ScaffoldMessenger.of(

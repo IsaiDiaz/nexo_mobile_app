@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo/data/local/session_local.dart';
+import 'package:nexo/presentation/app.dart';
 import 'package:nexo/presentation/widgets/professional_notes_sheet.dart';
+import 'package:nexo/data/local/local_appointment_repository.dart';
+import 'package:nexo/data/local/local_appointment_type_repository.dart';
+import 'package:nexo/data/local/local_schedule_repository.dart';
+import 'package:nexo/model/appointment.dart';
+import 'package:nexo/model/available_schedule.dart';
+import 'package:nexo/data/auth_offline_repository.dart';
+import 'package:nexo/application/auth_controller.dart';
 
 class OfflineHomePage extends ConsumerWidget {
   const OfflineHomePage({super.key});
@@ -23,7 +31,26 @@ class OfflineHomePage extends ConsumerWidget {
         final session = snap.data;
         if (session == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Modo sin conexión')),
+            appBar: AppBar(
+              title: const Text('Modo sin conexión'),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'Cerrar sesión offline',
+                  onPressed: () async {
+                    final container = ProviderScope.containerOf(
+                      context,
+                      listen: false,
+                    );
+
+                    await container
+                        .read(authControllerProvider.notifier)
+                        .signOut();
+                  },
+                ),
+              ],
+            ),
             body: const Center(
               child: Text('No hay sesión local. Inicia sesión online primero.'),
             ),
@@ -38,6 +65,30 @@ class OfflineHomePage extends ConsumerWidget {
           appBar: AppBar(
             title: const Text('Modo sin conexión'),
             centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Cerrar sesión offline',
+                onPressed: () async {
+                  final container = ProviderScope.containerOf(
+                    context,
+                    listen: false,
+                  );
+
+                  await container
+                      .read(authControllerProvider.notifier)
+                      .signOut();
+                  container.read(offlineModeProvider.notifier).state = false;
+
+                  container.read(authControllerProvider.notifier).state =
+                      AuthState.unauthenticated;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Sesión cerrada.')),
+                  );
+                },
+              ),
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
@@ -62,12 +113,14 @@ class OfflineHomePage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              if (roleStr.contains('PROFESSIONAL') ||
-                  roleStr.contains('professional') ||
-                  roleStr.contains('PROFESIONAL'))
-                _OfflineNotesCard(),
+              if (roleStr.toUpperCase().contains('PROFESIONAL'))
+                const _OfflineNotesCard(),
               const SizedBox(height: 12),
-              _OfflineAgendaCard(),
+              const _OfflineAgendaCard(),
+              const SizedBox(height: 12),
+              const _OfflineAppointmentTypesCard(),
+              const SizedBox(height: 12),
+              const _OfflineSchedulesCard(),
             ],
           ),
         );
@@ -76,6 +129,7 @@ class OfflineHomePage extends ConsumerWidget {
   }
 }
 
+/// 🔸 Notas locales
 class _OfflineNotesCard extends StatelessWidget {
   const _OfflineNotesCard();
 
@@ -94,16 +148,14 @@ class _OfflineNotesCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Puedes crear/editar notas locales asociadas a una cita específica. '
-              'Estos cambios se guardan solo en el dispositivo.',
+              'Puedes crear o editar notas asociadas a una cita específica. '
+              'Los cambios se guardan solo en el dispositivo.',
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               icon: const Icon(Icons.note_add),
               label: const Text('Abrir notas'),
               onPressed: () {
-                // Abre el bottom sheet de notas locales.
-                // Pide un ID de cita o muéstralo con UI propia. Aquí un ejemplo simple:
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -180,43 +232,196 @@ class _AskAppointmentAndOpenNotesState
   }
 }
 
+/// 🔸 Citas locales (Agenda)
 class _OfflineAgendaCard extends StatelessWidget {
   const _OfflineAgendaCard();
+
+  Future<List<Appointment>> _loadAppointments() async {
+    final repo = LocalAppointmentRepository();
+    return await repo.getAppointments();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Agenda (solo lectura)', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            const Text(
-              'Aquí puedes mostrar una agenda cacheada localmente si implementas '
-              'un repositorio de citas offline. Por ahora se muestra un placeholder.',
+    return FutureBuilder<List<Appointment>>(
+      future: _loadAppointments(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
             ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.event_note),
-              title: const Text('Citas próximas'),
-              subtitle: const Text('Sincroniza online para actualizar.'),
-              trailing: const Icon(Icons.lock),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Agenda offline aún no implementada (placeholder)',
+          );
+        }
+
+        final appointments = snapshot.data ?? [];
+        if (appointments.isEmpty) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Agenda (sin datos)',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'No hay citas guardadas localmente.\n'
+                    'Inicia sesión online para sincronizar.',
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Citas guardadas', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 8),
+                ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: appointments.length,
+                  itemBuilder: (ctx, i) {
+                    final a = appointments[i];
+                    // 👇 Usa 'type' si tu modelo no tiene 'service'
+                    final serviceName = a.type ?? 'Sin tipo';
+                    final startTime = a.start.toString().split('.')[0];
+                    final endTime = a.end.toString().split('.')[0];
+                    return ListTile(
+                      leading: const Icon(Icons.event_note),
+                      title: Text(serviceName),
+                      subtitle: Text('${a.status} | $startTime → $endTime'),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 🔸 Tipos de cita locales
+class _OfflineAppointmentTypesCard extends StatelessWidget {
+  const _OfflineAppointmentTypesCard();
+
+  Future<List<Map<String, dynamic>>> _loadAppointmentTypes() async {
+    final repo = LocalAppointmentTypeRepository();
+    return await repo.getAppointmentTypes();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _loadAppointmentTypes(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        final types = snapshot.data ?? [];
+        if (types.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tipos de cita guardados',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                ...types.map(
+                  (t) => ListTile(
+                    leading: const Icon(Icons.category_outlined),
+                    title: Text(t['name'] ?? 'Tipo'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 🔸 Horarios locales
+class _OfflineSchedulesCard extends StatelessWidget {
+  const _OfflineSchedulesCard();
+
+  Future<List<AvailableSchedule>> _loadSchedules() async {
+    final repo = LocalScheduleRepository();
+    return await repo.getSchedules();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FutureBuilder<List<AvailableSchedule>>(
+      future: _loadSchedules(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        final schedules = snapshot.data ?? [];
+        if (schedules.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Horarios disponibles',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                ...schedules.map(
+                  (s) => ListTile(
+                    leading: const Icon(Icons.access_time),
+                    title: Text('${s.dayOfWeek.toUpperCase()}'),
+                    subtitle: Text(
+                      '${s.formattedStartTime} → ${s.formattedEndTime}',
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

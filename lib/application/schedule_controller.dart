@@ -3,6 +3,8 @@ import 'package:nexo/data/schedule_repository.dart';
 import 'package:nexo/model/available_schedule.dart';
 import 'package:nexo/application/auth_controller.dart';
 import 'package:pocketbase/pocketbase.dart' as pb;
+import 'package:nexo/data/auth_offline_repository.dart';
+import 'package:nexo/data/local/local_schedule_repository.dart';
 
 class ScheduleState {
   final List<AvailableSchedule> schedules;
@@ -71,6 +73,15 @@ class ScheduleController extends StateNotifier<ScheduleState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      final isOffline = _ref.read(offlineModeProvider);
+
+      if (isOffline) {
+        final localRepo = LocalScheduleRepository();
+        final localSchedules = await localRepo.getSchedules();
+        state = state.copyWith(isLoading: false, schedules: localSchedules);
+        return;
+      }
+
       final professionalProfile = _ref.read(professionalProfileProvider).value;
       if (professionalProfile == null) {
         state = state.copyWith(
@@ -81,9 +92,16 @@ class ScheduleController extends StateNotifier<ScheduleState> {
         );
         return;
       }
+
       final schedules = await _scheduleRepository.getSchedulesForProfessional(
         professionalProfile.id,
       );
+
+      // 🔸 Guardar localmente
+      final localRepo = LocalScheduleRepository();
+      await localRepo.clearSchedules();
+      await localRepo.insertSchedules(schedules);
+
       state = state.copyWith(isLoading: false, schedules: schedules);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -125,6 +143,11 @@ class ScheduleController extends StateNotifier<ScheduleState> {
       final createdSchedule = await _scheduleRepository.createSchedule(
         newSchedule,
       );
+
+      // 🔸 Guardar localmente
+      final localRepo = LocalScheduleRepository();
+      await localRepo.insertSchedules([createdSchedule]);
+
       state = state.copyWith(
         isLoading: false,
         schedules: [...state.schedules, createdSchedule]
@@ -158,6 +181,11 @@ class ScheduleController extends StateNotifier<ScheduleState> {
       final updatedSchedule = await _scheduleRepository.updateSchedule(
         schedule,
       );
+
+      // 🔸 Actualizar localmente
+      final localRepo = LocalScheduleRepository();
+      await localRepo.insertSchedules([updatedSchedule]);
+
       state = state.copyWith(
         isLoading: false,
         schedules:
@@ -191,10 +219,17 @@ class ScheduleController extends StateNotifier<ScheduleState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _scheduleRepository.deleteSchedule(scheduleId);
-      state = state.copyWith(
-        isLoading: false,
-        schedules: state.schedules.where((s) => s.id != scheduleId).toList(),
-      );
+
+      final updatedSchedules = state.schedules
+          .where((s) => s.id != scheduleId)
+          .toList();
+
+      // 🔸 Actualizar SQLite
+      final localRepo = LocalScheduleRepository();
+      await localRepo.clearSchedules();
+      await localRepo.insertSchedules(updatedSchedules);
+
+      state = state.copyWith(isLoading: false, schedules: updatedSchedules);
       return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());

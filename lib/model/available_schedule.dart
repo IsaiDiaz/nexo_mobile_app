@@ -37,6 +37,27 @@ class AvailableSchedule {
     };
   }
 
+  // toMap and fromMap methods
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'professionalProfileId': professionalProfileId,
+      'dayOfWeek': dayOfWeek,
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime.toIso8601String(),
+    };
+  }
+
+  factory AvailableSchedule.fromMap(Map<String, dynamic> map) {
+    return AvailableSchedule(
+      id: map['id'],
+      professionalProfileId: map['professionalProfileId'],
+      dayOfWeek: map['dayOfWeek'],
+      startTime: DateTime.parse(map['startTime']),
+      endTime: DateTime.parse(map['endTime']),
+    );
+  }
+
   String get formattedStartTime {
     final hour = startTime.hour;
     final minute = startTime.minute.toString().padLeft(2, '0');
