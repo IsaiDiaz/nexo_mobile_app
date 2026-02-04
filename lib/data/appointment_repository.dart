@@ -43,6 +43,10 @@ class AppointmentRepository {
       final reFetchedRecord = await _pb
           .collection('appointment')
           .getOne(appointmentId, expand: 'client');
+      reFetchedRecord.set('status', newStatus);
+      await _pb
+          .collection('appointment')
+          .update(appointmentId, body: {'status': newStatus});
       return Appointment.fromRecord(reFetchedRecord);
     } on pb.ClientException catch (e) {
       print(
